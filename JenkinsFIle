@@ -2,7 +2,7 @@ node {
 	echo "${env.WORKSPACE}"
 	echo 'printed...'
     stage('CreateZip') {
-		zip archive: true, dir: "${env.WORKSPACE}", glob: '', zipFile: 'ZENKINS_Project_BuildId.zip'
+		zip archive: true, dir: "${env.WORKSPACE}", glob: '', zipFile: 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ZENKINS_Project_BuildId.zip'
 	}
 }
 
@@ -12,7 +12,7 @@ node {
     stage('UploadZip') {
         powershell '''Write-Host "Received scanning request successfully.."
         
-        //Compress-Archive -Path "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\sast-web-test" -DestinationPath "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ZENKINS_Project_BuildId.zip"
+        #Compress-Archive -Path "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\sast-web-test" -DestinationPath "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ZENKINS_Project_BuildId.zip"
 
 $buildId = "ZENKINS_Project_BuildId"
 $filePath = "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ZENKINS_Project_BuildId.zip"
