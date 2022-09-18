@@ -41,7 +41,7 @@ $bodyLines = (
     "$projectId",
     "--$boundary",
     "Content-Disposition: form-data; name=`"deleteProjectAndScanAfterScanning`"$LF",
-    "$(OFFENSIVE_DeleteScanOutput)",
+    "$env:OFFENSIVE_DeleteScanOutput",
     "--$boundary",
     "Content-Disposition: form-data; name=`"projectSource`"; filename=`"$projectName.zip`"",
     "Content-Type: application/x-zip-compressed$LF",
