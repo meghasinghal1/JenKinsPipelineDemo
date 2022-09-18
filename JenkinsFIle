@@ -12,7 +12,7 @@ node {
     stage('UploadZip') {
         powershell '''Write-Host "Received scanning request successfully.."
         
-        Compress-Archive -Path "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\sast-web-test" -DestinationPath "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ZENKINS_Project_BuildId.zip"
+        //Compress-Archive -Path "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\sast-web-test" -DestinationPath "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ZENKINS_Project_BuildId.zip"
 
 $buildId = "ZENKINS_Project_BuildId"
 $filePath = "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ZENKINS_Project_BuildId.zip"
