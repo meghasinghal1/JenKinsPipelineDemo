@@ -1,21 +1,17 @@
-node {
-	echo "${env.WORKSPACE}"
-	echo 'printed...'
-    stage('CreateZip') {
-		zip archive: true, dir: "${env.WORKSPACE}", glob: '', zipFile: 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ZENKINS_Project_BuildId.zip'
-	}
-}
+$env:Offensive360SastApi_Url = 'http://80.208.226.84:1800/app/api/ExternalScan/single-file'
+$env:OFFENSIVE_DeleteScanOutput = 'False'
+$env:Offensive360SastApi_ProjectId = ''
+$env:Offensive360SastApi_AccessToken =  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjYyMDMwNGI1YjE3NTFhMmM4YjdkNGY3YSIsIlVzZXJuYW1lIjoiYWRtaW4gMjoyNSBQTSIsInJvbGUiOiJFeHRlcm5hbCIsIkppcmFBdXRoZW50aWNhdGVkIjoiZmFsc2UiLCJuYmYiOjE2NjIxMjg3MzYsImV4cCI6MTk3NzQ4ODczNiwiaWF0IjoxNjYyMTI4NzM2fQ.rYKbTEXm2-Z-UALsyaCu13npb67igi2Ufz13Mdigd9s'
+$env:ADO_BreakBuildWhenVulnsFound = 'True'
 
-node {
-    echo "${env.WORKSPACE}"
-	echo 'printed...'
-    stage('UploadZip') {
-        powershell '''Write-Host "Received scanning request successfully.."
+Write-Host "Received scanning request successfully.."
         
-        #Compress-Archive -Path "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\sast-web-test" -DestinationPath "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ZENKINS_Project_BuildId.zip"
+Get-ChildItem -Path "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\sast-web-test" -Exclude @(".vs") | Compress-Archive -DestinationPath "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ZENKINS_Project_BuildId.zip" -Force
+#Compress-Archive -Path "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\sast-web-test" -DestinationPath "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ZENKINS_Project_BuildId.zip" -Force
 
 $buildId = "ZENKINS_Project_BuildId"
-$filePath = "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ZENKINS_Project_BuildId.zip"
+#$filePath = "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ZENKINS_Project_BuildId.zip"
+$filePath = "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ZENKINS_Project_BuildId\\WebGoat.NET.zip"
 $projectId = $null
 
 if("$env:Offensive360SastApi_ProjectId" -ne "")
@@ -29,7 +25,7 @@ $boundary = [System.Guid]::NewGuid().ToString()
 Write-Host "Starting scanning for the project name [$projectName], accessToken [$env:Offensive360SastApi_AccessToken], url [$env:Offensive360SastApi_Url], buildId [$buildId], filePath [$filePath], boundary [$boundary], projectId [$env:Offensive360SastApi_ProjectId], DeleteScanOutput [$env:OFFENSIVE_DeleteScanOutput]"
 
 $fileBytes = [System.IO.File]::ReadAllBytes($filePath)
-$fileContent = [System.Text.Encoding]::GetEncoding(\'iso-8859-1\').GetString($fileBytes)
+$fileContent = [System.Text.Encoding]::GetEncoding('iso-8859-1').GetString($fileBytes)
 
 $LF = "`r`n"
 $bodyLines = (
@@ -53,19 +49,17 @@ $apiResponse = Invoke-RestMethod -Method Post -Uri "$env:Offensive360SastApi_Url
 
 write-host ("total vulnerabilities count = ($apiResponse.vulnerabilities.length)")
 
-if ($apiResponse.vulnerabilities.length -gt 0 -and "$(ADO_BreakBuildWhenVulnsFound)" -eq \'True\') 
+if ($apiResponse.vulnerabilities.length -gt 0 -and "$env:ADO_BreakBuildWhenVulnsFound" -eq 'True') 
 {
     throw [System.Exception] "Vulnerabilities found and breaking the build."
 }
-elseif ($apiResponse.vulnerabilities.length -gt 0 -and "$(ADO_BreakBuildWhenVulnsFound)" -ne \'True\') 
+elseif ($apiResponse.vulnerabilities.length -gt 0 -and "$env:ADO_BreakBuildWhenVulnsFound" -ne 'True') 
 {
-    Write-Warning \'Vulnerabilities found and since ADO_BreakBuildWhenVulnsFound is set to false so continuing to build it.\'
+    Write-Warning 'Vulnerabilities found and since ADO_BreakBuildWhenVulnsFound is set to false so continuing to build it.'
 }
 else
 {
-    Write-Warning \'No vulnerabilities found and continuing to build it.\'
+    Write-Warning 'No vulnerabilities found and continuing to build it.'
 }
 
-Write-Host "Finished SAST file scanning."'''
-    }
-}
+Write-Host "Finished SAST file scanning."
