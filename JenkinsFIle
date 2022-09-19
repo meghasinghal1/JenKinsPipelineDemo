@@ -4,11 +4,6 @@ pipeline {
     stages {
         stage('zipRepo') {
             steps {
-	    	echo "${env.WORKSPACE}"
-		echo "${env.JOB_NAME}"
-		echo "${JOB_NAME}"
-		echo "${env.BUILD_NUMBER}"
-		echo "${BUILD_NUMBER}"
                 powershell '''
 					$sourcePath = "${env:WORKSPACE}"
 					$jobName = "${env:JOB_NAME}"
@@ -16,9 +11,9 @@ pipeline {
 					Write-Host "$sourcePath"
 					Write-Host "$jobName"
 					Write-Host "$buildId"
-					$destinationPath = $sourcePath.Replace("////$jobName", "").Replace("\\$jobName", "")
+					$destinationPath = Split-Path -Path "$sourcePath"
 					Write-Host "$destinationPath"
-					#Get-ChildItem -Path "$sourcePath" -Exclude @(".vs") | Compress-Archive -DestinationPath "$destinationPath" -Force
+					Get-ChildItem -Path "$sourcePath" -Exclude @(".vs") | Compress-Archive -DestinationPath "$destinationPath" -Force
 				
 				'''
             }
