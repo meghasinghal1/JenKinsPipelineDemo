@@ -11,8 +11,8 @@ pipeline {
 		echo "${BUILD_NUMBER}"
                 powershell '''
 					$sourcePath = "${env:WORKSPACE}"
-					$jobName = "${JOB_NAME}"
-					$buildId = "${BUILD_NUMBER}"
+					$jobName = "${env:JOB_NAME}"
+					$buildId = "${env:BUILD_NUMBER}"
 					Write-Host "$sourcePath"
 					Write-Host "$jobName"
 					Write-Host "$buildId"
