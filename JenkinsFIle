@@ -1,64 +1,63 @@
 node {
-    echo "${env.WORKSPACE}"
-	echo 'printed...'
     stage('UploadZip') {
-        powershell '''
-Write-Host "Received scanning request successfully.."
+    echo "${JOB_NAME}-${BUILD_NUMBER}"
+    powershell '''
+	Write-Host "Received scanning request successfully.."
         
-Get-ChildItem -Path "${env.WORKSPACE}" -Exclude @(".vs") | Compress-Archive -DestinationPath "C:\\\\ProgramData\\\\Jenkins\\\\.jenkins\\\\workspace\\\\ZENKINS_Project_BuildId.zip" -Force
+	Get-ChildItem -Path "${env.WORKSPACE}" -Exclude @(".vs") | Compress-Archive -DestinationPath "C:\\\\ProgramData\\\\Jenkins\\\\.jenkins\\\\workspace\\\\ZENKINS_Project_BuildId.zip" -Force
 
-$buildId = "ZENKINS_Project_BuildId"
-$filePath = "C:\\\\ProgramData\\\\Jenkins\\\\.jenkins\\\\workspace\\\\ZENKINS_Project_BuildId\\WebGoat.NET.zip"
-$projectId = $null
+	$buildId = "ZENKINS_Project_BuildId"
+	$filePath = "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ZENKINS_Project_BuildId\\WebGoat.NET.zip"
+	$projectId = $null
 
-if("$env:Offensive360SastApi_ProjectId" -ne "")
-{
-    $projectId = "$env:Offensive360SastApi_ProjectId"
-}
+	if("$env:Offensive360SastApi_ProjectId" -ne "")
+	{
+	    $projectId = "$env:Offensive360SastApi_ProjectId"
+	}
 
-$projectName = "ADO_Project_$buildId"
-$boundary = [System.Guid]::NewGuid().ToString()
+	$projectName = "Zenkins_Project_$buildId"
+	$boundary = [System.Guid]::NewGuid().ToString()
 
-Write-Host "Starting scanning for the project name [$projectName], accessToken [$env:Offensive360SastApi_AccessToken], url [$env:Offensive360SastApi_Url], buildId [$buildId], filePath [$filePath], boundary [$boundary], projectId [$env:Offensive360SastApi_ProjectId], DeleteScanOutput [$env:OFFENSIVE_DeleteScanOutput]"
+	Write-Host "Starting scanning for the project name [$projectName], accessToken [$env:Offensive360SastApi_AccessToken], url [$env:Offensive360SastApi_Url], buildId [$buildId], filePath [$filePath], boundary [$boundary], projectId [$env:Offensive360SastApi_ProjectId], DeleteScanOutput [$env:OFFENSIVE_DeleteScanOutput]"
 
-$fileBytes = [System.IO.File]::ReadAllBytes($filePath)
-$fileContent = [System.Text.Encoding]::GetEncoding(\'iso-8859-1\').GetString($fileBytes)
+	$fileBytes = [System.IO.File]::ReadAllBytes($filePath)
+	$fileContent = [System.Text.Encoding]::GetEncoding(\'iso-8859-1\').GetString($fileBytes)
 
-$LF = "`r`n"
-$bodyLines = (
-    "--$boundary",
-    "Content-Disposition: form-data; name=`"projectOrRepoName`"$LF",
-    "$projectName",
-    "--$boundary",
-    "Content-Disposition: form-data; name=`"projectID`"$LF",
-    "$projectId",
-    "--$boundary",
-    "Content-Disposition: form-data; name=`"deleteProjectAndScanAfterScanning`"$LF",
-    "$env:OFFENSIVE_DeleteScanOutput",
-    "--$boundary",
-    "Content-Disposition: form-data; name=`"projectSource`"; filename=`"$projectName.zip`"",
-    "Content-Type: application/x-zip-compressed$LF",
-    $fileContent,
-    "--$boundary--$LF"
-) -join $LF
+	$LF = "`r`n"
+	$bodyLines = (
+	    "--$boundary",
+	    "Content-Disposition: form-data; name=`"projectOrRepoName`"$LF",
+	    "$projectName",
+	    "--$boundary",
+	    "Content-Disposition: form-data; name=`"projectID`"$LF",
+	    "$projectId",
+	    "--$boundary",
+	    "Content-Disposition: form-data; name=`"deleteProjectAndScanAfterScanning`"$LF",
+	    "$env:OFFENSIVE_DeleteScanOutput",
+	    "--$boundary",
+	    "Content-Disposition: form-data; name=`"projectSource`"; filename=`"$projectName.zip`"",
+	    "Content-Type: application/x-zip-compressed$LF",
+	    $fileContent,
+	    "--$boundary--$LF"
+	) -join $LF
 
-$apiResponse = Invoke-RestMethod -Method Post -Uri "$env:Offensive360SastApi_Url" -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer $env:Offensive360SastApi_AccessToken"} -Body $bodyLines
+	$apiResponse = Invoke-RestMethod -Method Post -Uri "$env:Offensive360SastApi_Url" -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer $env:Offensive360SastApi_AccessToken"} -Body $bodyLines
 
-write-host ("total vulnerabilities count = ($apiResponse.vulnerabilities.length)")
+	write-host ("total vulnerabilities count = ($apiResponse.vulnerabilities.length)")
 
-if ($apiResponse.vulnerabilities.length -gt 0 -and "$env:ADO_BreakBuildWhenVulnsFound" -eq \'True\') 
-{
-    throw [System.Exception] "Vulnerabilities found and breaking the build."
-}
-elseif ($apiResponse.vulnerabilities.length -gt 0 -and "$env:ADO_BreakBuildWhenVulnsFound" -ne \'True\') 
-{
-    Write-Warning \'Vulnerabilities found and since ADO_BreakBuildWhenVulnsFound is set to false so continuing to build it.\'
-}
-else
-{
-    Write-Warning \'No vulnerabilities found and continuing to build it.\'
-}
+	if ($apiResponse.vulnerabilities.length -gt 0 -and "$env:ADO_BreakBuildWhenVulnsFound" -eq \'True\') 
+	{
+	    throw [System.Exception] "Vulnerabilities found and breaking the build."
+	}
+	elseif ($apiResponse.vulnerabilities.length -gt 0 -and "$env:ADO_BreakBuildWhenVulnsFound" -ne \'True\') 
+	{
+	    Write-Warning \'Vulnerabilities found and since ADO_BreakBuildWhenVulnsFound is set to false so continuing to build it.\'
+	}
+	else
+	{
+	    Write-Warning \'No vulnerabilities found and continuing to build it.\'
+	}
 
-Write-Host "Finished SAST file scanning."'''
+	Write-Host "Finished SAST file scanning."'''
     }
 }
