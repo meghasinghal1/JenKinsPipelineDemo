@@ -9,7 +9,7 @@ pipeline {
 					$jobName = "${JOB_NAME}"
 					Write-Host "$sourcePath"
 					Write-Host "$jobName"
-					$destinationPath = $sourcePath.Replace("//$jobName", "").Replace("\$jobName", "")
+					$destinationPath = $sourcePath.Replace("////$jobName", "").Replace("\\$jobName", "")
 					Write-Host "$destinationPath"
 					Get-ChildItem -Path "$sourcePath" -Exclude @(".vs") | Compress-Archive -DestinationPath "$destinationPath" -Force
 				
