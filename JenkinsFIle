@@ -5,10 +5,12 @@ pipeline {
         stage('zipRepo') {
             steps {
                 powershell '''
-					$sourcePath = "${env.WORKSPACE}"
+					$sourcePath = "${env:WORKSPACE}"
 					$jobName = "${JOB_NAME}"
+					$buildId = "${BUILD_NUMBER}"
 					Write-Host "$sourcePath"
 					Write-Host "$jobName"
+					Write-Host "$buildId"
 					$destinationPath = $sourcePath.Replace("////$jobName", "").Replace("\\$jobName", "")
 					Write-Host "$destinationPath"
 					#Get-ChildItem -Path "$sourcePath" -Exclude @(".vs") | Compress-Archive -DestinationPath "$destinationPath" -Force
