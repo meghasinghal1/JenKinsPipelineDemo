@@ -7,7 +7,7 @@ pipeline {
                 powershell '''
 					$sourcePath = "${env:WORKSPACE}"
 					$destinationPath = Split-Path -Path "$sourcePath"
-					$destinationPath += "$destinationPath\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
+					$destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
 					Write-Host "$destinationPath"
 					Get-ChildItem -Path "$sourcePath" -Exclude @(".vs") | Compress-Archive -DestinationPath "$destinationPath" -Force
 				
