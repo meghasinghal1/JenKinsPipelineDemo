@@ -1,63 +1,84 @@
-node {
-    stage('UploadZip') {
-    echo "${JOB_NAME}-${BUILD_NUMBER}"
-    powershell '''
-	Write-Host "Received scanning request successfully.."
-        
-	Get-ChildItem -Path "${env.WORKSPACE}" -Exclude @(".vs") | Compress-Archive -DestinationPath "C:\\\\ProgramData\\\\Jenkins\\\\.jenkins\\\\workspace\\\\ZENKINS_Project_BuildId.zip" -Force
+pipeline {
+    agent any
 
-	$buildId = "ZENKINS_Project_BuildId"
-	$filePath = "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ZENKINS_Project_BuildId\\WebGoat.NET.zip"
-	$projectId = $null
+    stages {
+        stage('zipRepo') {
+            steps {
+                powershell '''
+				
+					Get-ChildItem -Path "${env.WORKSPACE}" -Exclude @(".vs") | Compress-Archive -DestinationPath "C:\\\\ProgramData\\\\Jenkins\\\\.jenkins\\\\workspace\\\\ZENKINS_Project_BuildId.zip" -Force
+				
+				'''
+            }
+        }
+		stage('uploadZip') {
+            steps {
+                powershell '''
+					Write-Host "Received scanning request successfully.."
+						
+					Get-ChildItem -Path "${env.WORKSPACE}" -Exclude @(".vs") | Compress-Archive -DestinationPath "C:\\\\ProgramData\\\\Jenkins\\\\.jenkins\\\\workspace\\\\ZENKINS_Project_BuildId.zip" -Force
 
-	if("$env:Offensive360SastApi_ProjectId" -ne "")
-	{
-	    $projectId = "$env:Offensive360SastApi_ProjectId"
-	}
+					$buildId = "ZENKINS_Project_BuildId"
+					$filePath = "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ZENKINS_Project_BuildId\\WebGoat.NET.zip"
+					$projectId = $null
 
-	$projectName = "Zenkins_Project_$buildId"
-	$boundary = [System.Guid]::NewGuid().ToString()
+					if("$env:Offensive360SastApi_ProjectId" -ne "")
+					{
+						$projectId = "$env:Offensive360SastApi_ProjectId"
+					}
 
-	Write-Host "Starting scanning for the project name [$projectName], accessToken [$env:Offensive360SastApi_AccessToken], url [$env:Offensive360SastApi_Url], buildId [$buildId], filePath [$filePath], boundary [$boundary], projectId [$env:Offensive360SastApi_ProjectId], DeleteScanOutput [$env:OFFENSIVE_DeleteScanOutput]"
+					$projectName = "Zenkins_Project_$buildId"
+					$boundary = [System.Guid]::NewGuid().ToString()
 
-	$fileBytes = [System.IO.File]::ReadAllBytes($filePath)
-	$fileContent = [System.Text.Encoding]::GetEncoding(\'iso-8859-1\').GetString($fileBytes)
+					Write-Host "Starting scanning for the project name [$projectName], accessToken [$env:Offensive360SastApi_AccessToken], url [$env:Offensive360SastApi_Url], buildId [$buildId], filePath [$filePath], boundary [$boundary], projectId [$env:Offensive360SastApi_ProjectId], DeleteScanOutput [$env:OFFENSIVE_DeleteScanOutput]"
 
-	$LF = "`r`n"
-	$bodyLines = (
-	    "--$boundary",
-	    "Content-Disposition: form-data; name=`"projectOrRepoName`"$LF",
-	    "$projectName",
-	    "--$boundary",
-	    "Content-Disposition: form-data; name=`"projectID`"$LF",
-	    "$projectId",
-	    "--$boundary",
-	    "Content-Disposition: form-data; name=`"deleteProjectAndScanAfterScanning`"$LF",
-	    "$env:OFFENSIVE_DeleteScanOutput",
-	    "--$boundary",
-	    "Content-Disposition: form-data; name=`"projectSource`"; filename=`"$projectName.zip`"",
-	    "Content-Type: application/x-zip-compressed$LF",
-	    $fileContent,
-	    "--$boundary--$LF"
-	) -join $LF
+					$fileBytes = [System.IO.File]::ReadAllBytes($filePath)
+					$fileContent = [System.Text.Encoding]::GetEncoding(\'iso-8859-1\').GetString($fileBytes)
 
-	$apiResponse = Invoke-RestMethod -Method Post -Uri "$env:Offensive360SastApi_Url" -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer $env:Offensive360SastApi_AccessToken"} -Body $bodyLines
+					$LF = "`r`n"
+					$bodyLines = (
+						"--$boundary",
+						"Content-Disposition: form-data; name=`"projectOrRepoName`"$LF",
+						"$projectName",
+						"--$boundary",
+						"Content-Disposition: form-data; name=`"projectID`"$LF",
+						"$projectId",
+						"--$boundary",
+						"Content-Disposition: form-data; name=`"deleteProjectAndScanAfterScanning`"$LF",
+						"$env:OFFENSIVE_DeleteScanOutput",
+						"--$boundary",
+						"Content-Disposition: form-data; name=`"projectSource`"; filename=`"$projectName.zip`"",
+						"Content-Type: application/x-zip-compressed$LF",
+						$fileContent,
+						"--$boundary--$LF"
+					) -join $LF
 
-	write-host ("total vulnerabilities count = ($apiResponse.vulnerabilities.length)")
+					$apiResponse = Invoke-RestMethod -Method Post -Uri "$env:Offensive360SastApi_Url" -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer $env:Offensive360SastApi_AccessToken"} -Body $bodyLines
 
-	if ($apiResponse.vulnerabilities.length -gt 0 -and "$env:ADO_BreakBuildWhenVulnsFound" -eq \'True\') 
-	{
-	    throw [System.Exception] "Vulnerabilities found and breaking the build."
-	}
-	elseif ($apiResponse.vulnerabilities.length -gt 0 -and "$env:ADO_BreakBuildWhenVulnsFound" -ne \'True\') 
-	{
-	    Write-Warning \'Vulnerabilities found and since ADO_BreakBuildWhenVulnsFound is set to false so continuing to build it.\'
-	}
-	else
-	{
-	    Write-Warning \'No vulnerabilities found and continuing to build it.\'
-	}
+					write-host ("total vulnerabilities count = ($apiResponse.vulnerabilities.length)")
 
-	Write-Host "Finished SAST file scanning."'''
+					if ($apiResponse.vulnerabilities.length -gt 0 -and "$env:ADO_BreakBuildWhenVulnsFound" -eq \'True\') 
+					{
+						throw [System.Exception] "Vulnerabilities found and breaking the build."
+					}
+					elseif ($apiResponse.vulnerabilities.length -gt 0 -and "$env:ADO_BreakBuildWhenVulnsFound" -ne \'True\') 
+					{
+						Write-Warning \'Vulnerabilities found and since ADO_BreakBuildWhenVulnsFound is set to false so continuing to build it.\'
+					}
+					else
+					{
+						Write-Warning \'No vulnerabilities found and continuing to build it.\'
+					}
+
+					Write-Host "Finished SAST file scanning."
+					'''
+            }
+        }
+		stage('build') {
+            steps {
+                sh 'make' 
+                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true 
+            }
+        }
     }
 }
