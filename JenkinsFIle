@@ -18,11 +18,13 @@ pipeline {
             steps {
                 powershell '''
 					Write-Host "Received scanning request successfully.."
-						
-					#Get-ChildItem -Path "${env.WORKSPACE}" -Exclude @(".vs") | Compress-Archive -DestinationPath "C:\\\\ProgramData\\\\Jenkins\\\\.jenkins\\\\workspace\\\\ZENKINS_Project_BuildId.zip" -Force
+					
+					$sourcePath = "${env:WORKSPACE}"
+					$destinationPath = Split-Path -Path "$sourcePath"
+					$filePath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
+					Write-Host "$destinationPath"
 
-					$buildId = "ZENKINS_Project_BuildId"
-					$filePath = "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\ZENKINS_Project_BuildId\\WebGoat.NET.zip"
+					$buildId = "${env:JOB_NAME}-${env:BUILD_NUMBER}"
 					$projectId = $null
 
 					if("$env:Offensive360SastApi_ProjectId" -ne "")
