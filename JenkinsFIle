@@ -20,7 +20,7 @@ pipeline {
 					Write-Host "Received scanning request successfully.."
 					
 					$sourcePath = "${env:WORKSPACE}"
-					$destinationPath = Split-Path -Path "$sourcePath"
+					$filePath = Split-Path -Path "$sourcePath"
 					$filePath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
 					Write-Host "$destinationPath"
 
