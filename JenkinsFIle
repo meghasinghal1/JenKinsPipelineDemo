@@ -11,7 +11,7 @@ pipeline {
 					Write-Host "$jobName"
 					$destinationPath = $sourcePath.Replace("////$jobName", "").Replace("\\$jobName", "")
 					Write-Host "$destinationPath"
-					Get-ChildItem -Path "$sourcePath" -Exclude @(".vs") | Compress-Archive -DestinationPath "$destinationPath" -Force
+					#Get-ChildItem -Path "$sourcePath" -Exclude @(".vs") | Compress-Archive -DestinationPath "$destinationPath" -Force
 				
 				'''
             }
