@@ -4,6 +4,11 @@ pipeline {
     stages {
         stage('zipRepo') {
             steps {
+	    	echo "${env.WORKSPACE}"
+		echo "${env.JOB_NAME}"
+		echo "${JOB_NAME}"
+		echo "${env.BUILD_NUMBER}"
+		echo "${BUILD_NUMBER}"
                 powershell '''
 					$sourcePath = "${env:WORKSPACE}"
 					$jobName = "${JOB_NAME}"
