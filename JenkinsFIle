@@ -4,10 +4,6 @@ pipeline {
     stages {
         stage('zipRepo') {
             steps {
-	    	$sourcePath = "${env.WORKSPACE}"
-		$destinationPath = Split-Path -Path "$sourcePath"
-		$destinationPath += "\\${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
-		echo "$destinationPath"
                 sh 'mkdir archive'
                 sh 'echo test > archive/test.txt'
                 zip zipFile: 'test.zip', archive: false, dir: 'archive'
