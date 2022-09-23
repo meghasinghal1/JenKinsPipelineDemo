@@ -10,9 +10,7 @@ pipeline {
 					$destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
 					Write-Host "$destinationPath"
 					#Get-ChildItem -Path "$sourcePath" -Exclude @(".vs") | Compress-Archive -DestinationPath "$destinationPath" -Force
-					sh 'mkdir archive'
-					sh 'echo test > archive/test.txt'
-					zip zipFile: "$destinationPath", archive: false, dir: 'archive'
+					zip zipFile: "$destinationPath", archive: false, dir: "$sourcePath"
 					archiveArtifacts artifacts: "$destinationPath", fingerprint: true
 				
 				'''
