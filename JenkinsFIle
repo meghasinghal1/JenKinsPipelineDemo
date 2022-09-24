@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('zipRepo') {
             steps {
-		zip zipFile: "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\sast-web-test", archive: true, dir: "C:\\ProgramData\\Jenkins\\.jenkins\\workspace"
+		archiveArtifacts artifacts: "C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\sast-web-test"
             }
         }
 		stage('uploadZip') {
