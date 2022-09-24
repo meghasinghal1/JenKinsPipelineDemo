@@ -7,9 +7,7 @@ pipeline {
 	    deleteDir()
                 sh 'mkdir -p archive'
                 sh 'echo test > archive/test.txt'
-                script{
-                    zip archive: true, dir: 'archive', glob: '', zipFile: 'coverage-files.zip'
-                } 
+                zip archive: true, dir: 'archive', glob: '', zipFile: 'coverage-files.zip'
             
         }
 		stage('uploadZip') {
