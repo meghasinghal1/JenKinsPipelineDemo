@@ -3,9 +3,14 @@ pipeline {
 
     stages {
         stage('zipRepo') {
-            steps {
-		zip archive: true, dir: 'C:/ProgramData/Jenkins/.jenkins/workspace/sast-web-test', glob: '', zipFile: 'C:/ProgramData/Jenkins/.jenkins/workspace/sast-web-test.zip'
-            }
+	    agent { label 'linux' }
+	    deleteDir()
+                sh 'mkdir -p archive'
+                sh 'echo test > archive/test.txt'
+                script{
+                    zip archive: true, dir: 'archive', glob: '', zipFile: 'coverage-files.zip'
+                } 
+            
         }
 		stage('uploadZip') {
             steps {
