@@ -4,9 +4,9 @@ pipeline {
         stage('test'){
             steps{
                 echo 'testtestiing'
-                dir('sast-web-test') {
+                dir('WebGoat') {
                     sh '''
-                    zip -r  sast-web-testttttttttttt.zip algo
+                    zip -r  WebGoat.zip algo
                     '''
                }
             }
