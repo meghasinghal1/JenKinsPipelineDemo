@@ -1,6 +1,3 @@
  node(){
-     deleteDir()
-     sh 'mkdir -p archive'
-     sh 'echo test > archive/test.txt'
-     zip archive: true, dir: 'archive', glob: '', zipFile: 'coverage-files.zip'
+     zip archive: true, dir: 'C:\ProgramData\Jenkins\.jenkins\workspace\WebGoatCoins', glob: '', zipFile: 'test.zip'
 }
