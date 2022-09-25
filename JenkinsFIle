@@ -3,7 +3,7 @@ pipeline {
     stages{
         stage('test'){
             steps{
-                sh 'echo test > archive/test.txt'
+                sh 'echo test > C:\ProgramData\Jenkins\.jenkins\workspace\sast-web-test'
             }
         }
     }
