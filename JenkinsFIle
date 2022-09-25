@@ -4,9 +4,11 @@ pipeline {
         stage('test'){
             steps{
                 echo 'testtestiing'
-                script{
-                    zip archive: true, dir: 'archive', glob: '', zipFile: 'coverage-files.zip'
-                }
+                dir('sast-web-test') {
+                    sh '''
+                    zip -r  sast-web-testttttttttttt.zip algo
+                    '''
+               }
             }
         }
     }
