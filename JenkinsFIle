@@ -2,7 +2,6 @@ pipeline {
     agent any 
     stages{
         stage('test'){
-            agent { label 'linux' }
             steps{
                 deleteDir()
                 sh 'mkdir -p archive'
