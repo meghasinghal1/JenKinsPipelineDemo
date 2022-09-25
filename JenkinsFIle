@@ -4,7 +4,9 @@ pipeline {
     stages {
         stage('zipRepo') {
 			steps { 
-				zip zipFile: 'relative-hello.zip', dir: 'hello', archive: true
+				script { 
+					zip zipFile: 'relative-hello.zip', dir: 'hello', archive: true
+				}
 			}
         }
 		stage('uploadZip') {
