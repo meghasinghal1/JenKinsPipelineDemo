@@ -1,10 +1,4 @@
 node {
-    stage('Clean'){
-        cleanWs()
-    }
-    stage('Checkout') {
-       git branch: 'develop', url: 'https://github.com/meghasinghal1/JenKinsPipelineDemo.git'
-    }
     stage('Zip') {
         dir('algo-python') {
             sh '''
