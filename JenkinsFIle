@@ -1,3 +1,164 @@
- node(){
-     zip archive: true, dir: 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\sast-web-test - Copy', glob: '', zipFile: 'test1.zip'
+pipeline {
+    agent any
+
+    stages {
+        stage('zipRepo') {
+	         zip archive: true, dir: 'C:\ProgramData\Jenkins\.jenkins\workspace\sast-web-test - Copy', glob: '', zipFile: 'abc.zip'
+        }
+		stage('uploadZip') {
+            steps {
+                powershell '''
+					Write-Host "Received scanning request successfully.."
+					
+					$sourcePath = "${env:WORKSPACE}"
+					$filePath = Split-Path -Path "$sourcePath"
+					$filePath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
+					Write-Host "$destinationPath"
+
+					$buildId = "${env:JOB_NAME}-${env:BUILD_NUMBER}"
+					$projectId = $null
+
+					if("$env:Offensive360SastApi_ProjectId" -ne "")
+					{
+						$projectId = "$env:Offensive360SastApi_ProjectId"
+					}
+
+					$projectName = "Zenkins_Project_$buildId"
+					$boundary = [System.Guid]::NewGuid().ToString()
+
+					Write-Host "Starting scanning for the project name [$projectName], accessToken [$env:Offensive360SastApi_AccessToken], url [$env:Offensive360SastApi_Url], buildId [$buildId], filePath [$filePath], boundary [$boundary], projectId [$env:Offensive360SastApi_ProjectId], DeleteScanOutput [$env:OFFENSIVE_DeleteScanOutput]"
+
+					$fileBytes = [System.IO.File]::ReadAllBytes($filePath)
+					$fileContent = [System.Text.Encoding]::GetEncoding(\'iso-8859-1\').GetString($fileBytes)
+
+					$LF = "`r`n"
+					$bodyLines = (
+						"--$boundary",
+						"Content-Disposition: form-data; name=`"projectOrRepoName`"$LF",
+						"$projectName",
+						"--$boundary",
+						"Content-Disposition: form-data; name=`"projectID`"$LF",
+						"$projectId",
+						"--$boundary",
+						"Content-Disposition: form-data; name=`"deleteProjectAndScanAfterScanning`"$LF",
+						"$env:OFFENSIVE_DeleteScanOutput",
+						"--$boundary",
+						"Content-Disposition: form-data; name=`"projectSource`"; filename=`"$projectName.zip`"",
+						"Content-Type: application/x-zip-compressed$LF",
+						$fileContent,
+						"--$boundary--$LF"
+					) -join $LF
+
+					$apiResponse = Invoke-RestMethod -Method Post -Uri "$env:Offensive360SastApi_Url" -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer $env:Offensive360SastApi_AccessToken"} -Body $bodyLines
+
+					write-host ("total vulnerabilities count = ($apiResponse.vulnerabilities.length)")
+
+					if ($apiResponse.vulnerabilities.length -gt 0 -and "$env:ADO_BreakBuildWhenVulnsFound" -eq \'True\') 
+					{
+						throw [System.Exception] "Vulnerabilities found and breaking the build."
+					}
+					elseif ($apiResponse.vulnerabilities.length -gt 0 -and "$env:ADO_BreakBuildWhenVulnsFound" -ne \'True\') 
+					{
+						Write-Warning \'Vulnerabilities found and since ADO_BreakBuildWhenVulnsFound is set to false so continuing to build it.\'
+					}
+					else
+					{
+						Write-Warning \'No vulnerabilities found and continuing to build it.\'
+					}
+
+					Write-Host "Finished SAST file scanning."
+					'''
+            }
+        }
+		stage('build') {
+            steps {
+                sh 'make' 
+                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true 
+            }
+        }
+    }
+}
+Footer
+© 2022 GitHub, Inc.pipeline {
+    agent any
+
+    stages {
+        stage('zipRepo') {
+	    agent { label 'linux' }
+	    deleteDir()
+                zip archive: true, dir: 'archive', glob: '', zipFile: 'coverage-files.zip'
+            
+        }
+		stage('uploadZip') {
+            steps {
+                powershell '''
+					Write-Host "Received scanning request successfully.."
+					
+					$sourcePath = "${env:WORKSPACE}"
+					$filePath = Split-Path -Path "$sourcePath"
+					$filePath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
+					Write-Host "$destinationPath"
+
+					$buildId = "${env:JOB_NAME}-${env:BUILD_NUMBER}"
+					$projectId = $null
+
+					if("$env:Offensive360SastApi_ProjectId" -ne "")
+					{
+						$projectId = "$env:Offensive360SastApi_ProjectId"
+					}
+
+					$projectName = "Zenkins_Project_$buildId"
+					$boundary = [System.Guid]::NewGuid().ToString()
+
+					Write-Host "Starting scanning for the project name [$projectName], accessToken [$env:Offensive360SastApi_AccessToken], url [$env:Offensive360SastApi_Url], buildId [$buildId], filePath [$filePath], boundary [$boundary], projectId [$env:Offensive360SastApi_ProjectId], DeleteScanOutput [$env:OFFENSIVE_DeleteScanOutput]"
+
+					$fileBytes = [System.IO.File]::ReadAllBytes($filePath)
+					$fileContent = [System.Text.Encoding]::GetEncoding(\'iso-8859-1\').GetString($fileBytes)
+
+					$LF = "`r`n"
+					$bodyLines = (
+						"--$boundary",
+						"Content-Disposition: form-data; name=`"projectOrRepoName`"$LF",
+						"$projectName",
+						"--$boundary",
+						"Content-Disposition: form-data; name=`"projectID`"$LF",
+						"$projectId",
+						"--$boundary",
+						"Content-Disposition: form-data; name=`"deleteProjectAndScanAfterScanning`"$LF",
+						"$env:OFFENSIVE_DeleteScanOutput",
+						"--$boundary",
+						"Content-Disposition: form-data; name=`"projectSource`"; filename=`"$projectName.zip`"",
+						"Content-Type: application/x-zip-compressed$LF",
+						$fileContent,
+						"--$boundary--$LF"
+					) -join $LF
+
+					$apiResponse = Invoke-RestMethod -Method Post -Uri "$env:Offensive360SastApi_Url" -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer $env:Offensive360SastApi_AccessToken"} -Body $bodyLines
+
+					write-host ("total vulnerabilities count = ($apiResponse.vulnerabilities.length)")
+
+					if ($apiResponse.vulnerabilities.length -gt 0 -and "$env:ADO_BreakBuildWhenVulnsFound" -eq \'True\') 
+					{
+						throw [System.Exception] "Vulnerabilities found and breaking the build."
+					}
+					elseif ($apiResponse.vulnerabilities.length -gt 0 -and "$env:ADO_BreakBuildWhenVulnsFound" -ne \'True\') 
+					{
+						Write-Warning \'Vulnerabilities found and since ADO_BreakBuildWhenVulnsFound is set to false so continuing to build it.\'
+					}
+					else
+					{
+						Write-Warning \'No vulnerabilities found and continuing to build it.\'
+					}
+
+					Write-Host "Finished SAST file scanning."
+					'''
+            }
+        }
+		stage('build') {
+            steps {
+                sh 'make' 
+                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true 
+            }
+        }
+    }
 }
