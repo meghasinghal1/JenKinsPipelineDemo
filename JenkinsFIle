@@ -4,7 +4,9 @@ pipeline {
     stages {
         stage('zipRepo') {
 	    steps {
-	         zip dir: 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\sast-web-test - Copy', glob: '', zipFile: 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\abc.zip'
+	    	script{
+	         	zip archive: true, dir: 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\sast-web-test - Copy', glob: '', zipFile: 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\abc.zip'
+		 }
 	    }
         }
     }
