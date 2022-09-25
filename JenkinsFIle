@@ -1,15 +1,24 @@
-pipeline {
-    agent any 
-    stages{
-        stage('test'){
-            steps{
-                echo 'testtestiing'
-                dir('WebGoat') {
-                    sh '''
-                    zip -r  WebGoat.zip algo
-                    '''
-               }
-            }
+node {
+    stage('Clean'){
+        cleanWs()
+    }
+    stage('Checkout') {
+       git branch: 'develop', url: 'ssh://user@ip:29418/prj.git'
+    }
+    stage('Zip') {
+        dir('algo-python') {
+            sh '''
+            zip -r  algo.zip algo
+            '''
+       }
+    }
+    stage('Upload zip'){
+        dir('algo-python') {
+            sh '''
+                source /etc/profile
+                export HADOOP_USER_NAME=dev
+                hdfs dfs -put -f algo.zip /user/dev/zipfile/
+            '''
         }
     }
 }
