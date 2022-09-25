@@ -4,7 +4,9 @@ pipeline {
         stage('test'){
             steps{
                 echo 'testtestiing'
-                sh 'mkdir -p archive'
+                script{
+                    zip archive: true, dir: 'archive', glob: '', zipFile: 'coverage-files.zip'
+                }
             }
         }
     }
