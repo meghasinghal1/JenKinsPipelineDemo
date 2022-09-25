@@ -3,7 +3,7 @@ pipeline {
 
     stages {
         stage('zipRepo') {
-	         zip archive: true, dir: 'C:\ProgramData\Jenkins\.jenkins\workspace\sast-web-test - Copy', glob: '', zipFile: 'abc.zip'
+	         zip archive: true, dir: 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\sast-web-test - Copy', glob: '', zipFile: 'abc.zip'
         }
 		stage('uploadZip') {
             steps {
