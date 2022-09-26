@@ -26,7 +26,7 @@ pipeline {
 			Write-Host "******************************"
 			Write-Host "$sourcePath"
 			Write-Host "******************************"
-			Write-Host $file.Substring($sourcePath.Length)
+			Write-Host $file.Substring($sourcePath.Length).replace("a","aaaaa")
 			Write-Host "******************************"
 			Write-Host "$file".Replace("\\", "/").Replace("\", "/")
 			Write-Host "******************************"
