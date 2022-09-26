@@ -5,7 +5,7 @@ pipeline {
         stage('zipRepo') {
 		steps { 
 			script { 
-				zip zipFile: 'relative-hello.zip', dir: 'hello', archive: true
+				zip zipFile: 'relative-hello.zip', dir: 'sast-web-test', archive: true
 			}
 		}
         }
