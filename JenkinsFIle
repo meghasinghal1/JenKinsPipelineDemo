@@ -26,14 +26,14 @@ pipeline {
 			Write-Host "******************************"
 			Write-Host "$sourcePath"
 			Write-Host "******************************"
-			Write-Host $file.Substring($sourcePath.Length).Replace("\", "/")
+			Write-Host $file.Substring($sourcePath.Length).Replace("\\\\", "/").Replace("\\", "/")
 			Write-Host "******************************"
-			Write-Host "$file".Replace("\", "/")
+			Write-Host "$file".Replace("\\\\", "/").Replace("\\", "/")
 			Write-Host "******************************"
-			Write-Host $file.Replace("\", "/")
+			Write-Host $file.Replace("\\\\", "/").Replace("\\", "/")
 			Write-Host "******************************"
-                        $relPath = $file.Substring($sourcePath.Length).Replace("\\", "/").Replace("\", "/")
-                        $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("\\", "/").Replace("\", "/"), $relPath);
+                        $relPath = $file.Substring($sourcePath.Length).Replace("\\\\", "/").Replace("\\", "/")
+                        $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("\\\\", "/").Replace("\\", "/"), $relPath);
                     }
                     $zip.Dispose()
 				
