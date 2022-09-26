@@ -3,11 +3,101 @@ pipeline {
 
     stages {
         stage('zipRepo') {
-		steps { 
-			script { 
-				zip zipFile: 'relative-hello.zip', dir: 'WebGoat', archive: true
-			}
-		}
+            steps {
+                powershell '''
+					$sourcePath = "${env:WORKSPACE}"
+					$destinationPath = Split-Path -Path "$sourcePath"
+					$destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
+					Write-Host "$destinationPath"
+					
+                    if(Test-Path -Path $destinationPath -PathType Leaf)
+                    {
+                        Remove-Item $destinationPath
+                    }
+
+                    Add-Type -Assembly \'System.IO.Compression.FileSystem\'
+                    $zip = [System.IO.Compression.ZipFile]::Open($destinationPath, \'create\')
+                    $files = [IO.Directory]::GetFiles($sourcePath, "*" , [IO.SearchOption]::AllDirectories)
+                    foreach($file in $files)
+                    {
+                        $relPath = $file.Substring($sourcePath.Length).Replace("\\", "/").Replace("\", "/")
+                        $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("\\", "/").Replace("\", "/"), $relPath);
+                    }
+                    $zip.Dispose()
+				
+				'''
+            }
+        }
+		stage('uploadZip') {
+            steps {
+                powershell '''
+					Write-Host "Received scanning request successfully.."
+					
+					$sourcePath = "${env:WORKSPACE}"
+					$filePath = Split-Path -Path "$sourcePath"
+					$filePath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
+					Write-Host "$destinationPath"
+
+					$buildId = "${env:JOB_NAME}-${env:BUILD_NUMBER}"
+					$projectId = $null
+
+					if("$env:Offensive360SastApi_ProjectId" -ne "")
+					{
+						$projectId = "$env:Offensive360SastApi_ProjectId"
+					}
+
+					$projectName = "Zenkins_Project_$buildId"
+					$boundary = [System.Guid]::NewGuid().ToString()
+
+					Write-Host "Starting scanning for the project name [$projectName], accessToken [$env:Offensive360SastApi_AccessToken], url [$env:Offensive360SastApi_Url], buildId [$buildId], filePath [$filePath], boundary [$boundary], projectId [$env:Offensive360SastApi_ProjectId], DeleteScanOutput [$env:OFFENSIVE_DeleteScanOutput]"
+
+					$fileBytes = [System.IO.File]::ReadAllBytes($filePath)
+					$fileContent = [System.Text.Encoding]::GetEncoding(\'iso-8859-1\').GetString($fileBytes)
+
+					$LF = "`r`n"
+					$bodyLines = (
+						"--$boundary",
+						"Content-Disposition: form-data; name=`"projectOrRepoName`"$LF",
+						"$projectName",
+						"--$boundary",
+						"Content-Disposition: form-data; name=`"projectID`"$LF",
+						"$projectId",
+						"--$boundary",
+						"Content-Disposition: form-data; name=`"deleteProjectAndScanAfterScanning`"$LF",
+						"$env:OFFENSIVE_DeleteScanOutput",
+						"--$boundary",
+						"Content-Disposition: form-data; name=`"projectSource`"; filename=`"$projectName.zip`"",
+						"Content-Type: application/x-zip-compressed$LF",
+						$fileContent,
+						"--$boundary--$LF"
+					) -join $LF
+
+					$apiResponse = Invoke-RestMethod -Method Post -Uri "$env:Offensive360SastApi_Url" -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer $env:Offensive360SastApi_AccessToken"} -Body $bodyLines
+
+					write-host ("total vulnerabilities count = ($apiResponse.vulnerabilities.length)")
+
+					if ($apiResponse.vulnerabilities.length -gt 0 -and "$env:ADO_BreakBuildWhenVulnsFound" -eq \'True\') 
+					{
+						throw [System.Exception] "Vulnerabilities found and breaking the build."
+					}
+					elseif ($apiResponse.vulnerabilities.length -gt 0 -and "$env:ADO_BreakBuildWhenVulnsFound" -ne \'True\') 
+					{
+						Write-Warning \'Vulnerabilities found and since ADO_BreakBuildWhenVulnsFound is set to false so continuing to build it.\'
+					}
+					else
+					{
+						Write-Warning \'No vulnerabilities found and continuing to build it.\'
+					}
+
+					Write-Host "Finished SAST file scanning."
+					'''
+            }
+        }
+		stage('build') {
+            steps {
+                sh 'make' 
+                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true 
+            }
         }
     }
 }
