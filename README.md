@@ -121,47 +121,18 @@ Sample - True/False
 1. Click on `Pipeline from left menu => Your pipeline => Edit => Variables` to configure Offensive 360 settings if you are setting up for first time or if you want to make any change to existing Offensive 360 settings.
 ![image](https://user-images.githubusercontent.com/13881466/192563774-38d3234e-5693-44e9-926b-213191fcec45.png)
 
-2. Then clieck on `+` icon to add new pipeline variable
-![image](https://user-images.githubusercontent.com/13881466/192564421-8f9c7565-a1e1-463e-803c-968ee67d6f53.png)
+2. Then click on `+` icon to add new pipeline variable
+![image](https://user-images.githubusercontent.com/13881466/192569113-4920a78c-fce9-427d-8805-baf6405904d1.png)
 
 3.Enter variable name and its value and click Ok
-![image](https://user-images.githubusercontent.com/13881466/192564652-ae89ea98-a219-4434-a125-b99cd0384a52.png)
+![image](https://user-images.githubusercontent.com/13881466/192569302-10270b64-594b-4508-b475-f9456e4fb3c7.png)
 
 4. Click on existing variable to update value of it
-![image](https://user-images.githubusercontent.com/13881466/192565511-cac16778-af8f-4b18-88fe-c77ce1040c18.png)
+![image](https://user-images.githubusercontent.com/13881466/192569594-94c90786-912b-4d25-9169-f83112f81a21.png)
 
 
 ## How it works
-1. Simply open any source file or project and right click on file or folder you will see respective context menu
-![image](https://user-images.githubusercontent.com/13881466/179181906-37b252bf-2b5f-4ac1-863c-b814be0b8774.png)
-![image](https://user-images.githubusercontent.com/13881466/179182052-4b8011f3-60d7-4515-9ebb-6a3643a08d9d.png)
-
-> **Note** 
-> When scanning the entire project, please select the "Scan Workspace" option for the best results instead of selecting "Scan Folder" on the root folder.
-
-2. Click on respective context menu to scan a file or folder. You will see queued status on status bar that indicates your scan request got queued.
-![image](https://user-images.githubusercontent.com/13881466/179186988-f968c6dc-c0f5-40b7-b04e-3de3f5ab7db3.png)
-
- 3. After some time message on status bar will be updated to let you know whether your scan request is still in queued state or it turned into in-progress state. if it is still in queued, you will see queue position.
- ![image](https://user-images.githubusercontent.com/13881466/179187742-0e9b008c-2d8d-4c96-98b0-c5cbef2f7e8e.png)
- ![image](https://user-images.githubusercontent.com/13881466/183276079-823d9824-804f-453c-88b3-fa1ec7757921.png)
-
-4. As soon as scanning is done, you will see vulnerabilities in IDE
-![image](https://user-images.githubusercontent.com/13881466/179190467-f683aefa-0bbc-4939-a654-5f3ecd975d26.png)
-
-5. By clicking on a vulnerability, you will be redirected to respective code file, line and column.
-![image](https://user-images.githubusercontent.com/13881466/179195045-62fadc58-7bcb-44c3-a6ff-4f881185921f.png)
-
-6. Mouse over on a vulnerability can help you in providing tooltip view to read the message easily.     
-![image](https://user-images.githubusercontent.com/13881466/179195366-5ef41a06-8b06-4857-8e43-743659c842ac.png)
- 
-7. `Clear all Errors` on right click on a vulnerability will be appeared and help you in clearing all the errors from IDE
-![image](https://user-images.githubusercontent.com/13881466/179200514-6947b5b6-cf94-417a-a52a-e2e60e532efd.png)
-![image](https://user-images.githubusercontent.com/13881466/179200874-1d5106bb-290b-4b67-a1db-b06757308708.png)
-
-
-8. `Get Help` on right click on a vulnerability will be appeared and help you in getting more details about a vulnerability
-![image](https://user-images.githubusercontent.com/13881466/179200708-c796e7e8-db5d-4e64-b6b4-f6bab9747881.png)
-![image](https://user-images.githubusercontent.com/13881466/179200804-21bc6707-6640-419d-8900-e6fec612eee3.png)
+Your CI pipeline will stop execution from scanning step as soon as it found any vulnerability and remaining steps like build etc will get skipped.
+![image](https://user-images.githubusercontent.com/13881466/192570312-fa880475-5242-4d95-bd96-11ac8184147c.png)
 
 **Enjoy!!**
