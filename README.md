@@ -6,12 +6,17 @@ This section explains how to setup Offensive 360 scan step and its configuration
 
 ## Offensive 360 CICD Setup
 
-1. Create Open the Microsoft Visual Studio Code application, navigate to the Extensions. 
+1. Add archive file agent task as CI step (before building) to compress your repo and create a zip file. 
 ```
-var add2 = function(number) {
-  return number + 2;
-}
+steps:
+- task: ArchiveFiles@2
+  displayName: 'Archive $(Build.SourcesDirectory)'
+  inputs:
+    rootFolderOrFile: '$(Build.SourcesDirectory)'
+    includeRootFolder: false
 ```
+![image](https://user-images.githubusercontent.com/13881466/192559405-9e9e7b02-a7fb-4d40-817e-b6cf81c1a7c0.png)
+
 
 
 2. Search for **Offensive 360** and click on install
