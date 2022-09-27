@@ -1,10 +1,10 @@
-# Offensive 360 for Visual Studio Code
+# Offensive 360 for Azure DevOps Pipeline
 
 Offensive 360 does deep source code analysis with one click. (We spent years building virtual compilers that understand the code, not only catching low hanging fruits vulnerabilities. We also claim that O360 can find security flaws that are even difficult for skilled application security testing consultants to find)
 
-This section explains how to install and configure the Offensive 360 Visual Studio Code Extension Plugin and how to scan files, folder and workspace.
+This section explains how to setup Offensive 360 scan step and its configuration as part of your CICD pipeline.
 
-## Installing the Plugin
+## Offensive 360 Scan Setup
 
 1. Open the Microsoft Visual Studio Code application, navigate to the Extensions. 
 ![image](https://user-images.githubusercontent.com/13881466/179171511-3a12fea4-910c-431e-b929-88b44252d18e.png)
