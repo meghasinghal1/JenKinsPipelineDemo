@@ -70,7 +70,7 @@ pipeline {
 						"--$boundary--$LF"
 					) -join $LF
 
-					$apiResponse = Invoke-RestMethod -Method Post -Uri "$env:Offensive360SastApi_BaseUrl.TrimEnd('/')/app/api/ExternalScan/single-file" -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer $env:Offensive360SastApi_AccessToken"} -Body $bodyLines
+					$apiResponse = Invoke-RestMethod -Method Post -Uri ("{0}/app/api/ExternalScan/single-file" -f $env:Offensive360SastApi_BaseUrl.TrimEnd('/')) -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer $env:Offensive360SastApi_AccessToken"} -Body $bodyLines
 
 					write-host ("total vulnerabilities count = {0}" -f $apiResponse.vulnerabilities.length)
 
