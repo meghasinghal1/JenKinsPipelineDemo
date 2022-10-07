@@ -50,7 +50,7 @@ pipeline {
 					$projectName = "Zenkins_Project_$buildId"
 					$boundary = [System.Guid]::NewGuid().ToString()
 
-					Write-Host "Starting scanning for the project name [$projectName], accessToken [$env:Offensive360SastApi_AccessToken], url [$env:Offensive360SastApi_Url], buildId [$buildId], filePath [$filePath], boundary [$boundary], projectId [$env:Offensive360SastApi_ProjectId], DeleteScanOutput [$env:OFFENSIVE_DeleteScanOutput]"
+					Write-Host "Starting scanning for the project name [$projectName], accessToken [$env:Offensive360SastApi_AccessToken], url [$env:Offensive360SastApi_Url], buildId [$buildId], filePath [$filePath], boundary [$boundary], projectId [$env:Offensive360SastApi_ProjectId]"
 
 					$fileBytes = [System.IO.File]::ReadAllBytes($filePath)
 					$fileContent = [System.Text.Encoding]::GetEncoding(\'iso-8859-1\').GetString($fileBytes)
@@ -63,9 +63,6 @@ pipeline {
 						"--$boundary",
 						"Content-Disposition: form-data; name=`"projectID`"$LF",
 						"$projectId",
-						"--$boundary",
-						"Content-Disposition: form-data; name=`"deleteProjectAndScanAfterScanning`"$LF",
-						"$env:OFFENSIVE_DeleteScanOutput",
 						"--$boundary",
 						"Content-Disposition: form-data; name=`"projectSource`"; filename=`"$projectName.zip`"",
 						"Content-Type: application/x-zip-compressed$LF",
