@@ -75,13 +75,6 @@ object Build : BuildType({
                 """.trimIndent()
             }
         }
-        dotnetMsBuild {
-            enabled = false
-            projects = "WebGoat.NET.sln"
-            version = DotnetMsBuildStep.MSBuildVersion.V17
-            args = "-restore -noLogo"
-            sdk = "3.5"
-        }
         powerShell {
             name = "uploadZip"
             scriptMode = script {
@@ -155,6 +148,13 @@ object Build : BuildType({
                     }
                 """.trimIndent()
             }
+        }
+        dotnetMsBuild {
+            enabled = false
+            projects = "WebGoat.NET.sln"
+            version = DotnetMsBuildStep.MSBuildVersion.V17
+            args = "-restore -noLogo"
+            sdk = "3.5"
         }
     }
 
