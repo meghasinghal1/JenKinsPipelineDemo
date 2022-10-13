@@ -52,8 +52,4 @@ object Build : BuildType({
         vcs {
         }
     }
-
-    requirements {
-        exists("DotNetCoreRuntime3.1_Path")
-    }
 })
