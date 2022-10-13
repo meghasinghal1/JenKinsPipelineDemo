@@ -2,6 +2,7 @@ import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.DotnetMsBuildStep
 import jetbrains.buildServer.configs.kotlin.buildSteps.dotnetMsBuild
 import jetbrains.buildServer.configs.kotlin.buildSteps.maven
+import jetbrains.buildServer.configs.kotlin.buildSteps.powerShell
 import jetbrains.buildServer.configs.kotlin.triggers.vcs
 
 /*
@@ -51,6 +52,12 @@ object Build : BuildType({
             version = DotnetMsBuildStep.MSBuildVersion.V17
             args = "-restore -noLogo"
             sdk = "3.5"
+        }
+        powerShell {
+            name = "zipRepo"
+            scriptMode = script {
+                content = """write-host "zipRepo step called""""
+            }
         }
     }
 
