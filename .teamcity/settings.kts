@@ -1,6 +1,5 @@
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.DotnetMsBuildStep
-import jetbrains.buildServer.configs.kotlin.buildSteps.dotnetBuild
 import jetbrains.buildServer.configs.kotlin.buildSteps.dotnetMsBuild
 import jetbrains.buildServer.configs.kotlin.triggers.vcs
 
@@ -41,12 +40,6 @@ object Build : BuildType({
     }
 
     steps {
-        dotnetBuild {
-            name = "build"
-            enabled = false
-            configuration = "Release"
-            param("dotNetCoverage.dotCover.home.path", "%teamcity.tool.JetBrains.dotCover.CommandLineTools.DEFAULT%")
-        }
         dotnetMsBuild {
             projects = "WebGoat.NET.sln"
             version = DotnetMsBuildStep.MSBuildVersion.V17
