@@ -91,7 +91,7 @@ object Build : BuildType({
                     ${'$'}sourcePath = "%teamcity.build.checkoutDir%"
                     ${'$'}filePath = Split-Path -Path "${'$'}sourcePath"
                     ${'$'}filePath += "\%env.TEAMCITY_PROJECT_NAME%-%build.number%.zip"
-                    Write-Host "${'$'}destinationPath"
+                    Write-Host "${'$'}filePath"
                     
                     ${'$'}buildId = "%env.TEAMCITY_PROJECT_NAME%-%build.number%.zip"
                     ${'$'}projectId = ${'$'}null
@@ -149,9 +149,9 @@ object Build : BuildType({
                     
                     Write-Host "Finished SAST file scanning."
                     
-                    if(Test-Path -Path ${'$'}destinationPath -PathType Leaf)
+                    if(Test-Path -Path ${'$'}filePath -PathType Leaf)
                     {
-                    Remove-Item ${'$'}destinationPath
+                    	Remove-Item ${'$'}filePath
                     }
                 """.trimIndent()
             }
