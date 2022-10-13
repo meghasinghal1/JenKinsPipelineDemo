@@ -104,7 +104,7 @@ object Build : BuildType({
                     ${'$'}projectName = "TeamCity_Project_${'$'}buildId"
                     ${'$'}boundary = [System.Guid]::NewGuid().ToString()
                     
-                    Write-Host "Starting scanning for the project name [${'$'}projectName], accessToken [%env.Offensive360SastApi_AccessToken%], url [%env.Offensive360SastApi_BaseUrl%], buildId [${'$'}buildId], filePath [${'$'}filePath], boundary [${'$'}boundary], projectId [%env.Offensive360SastApi_ProjectId%], IsBreakBuildWhenVulnsFound [%env:ADO_BreakBuildWhenVulnsFound%]"
+                    Write-Host "Starting scanning for the project name [${'$'}projectName], accessToken [%env.Offensive360SastApi_AccessToken%], url [%env.Offensive360SastApi_BaseUrl%], buildId [${'$'}buildId], filePath [${'$'}filePath], boundary [${'$'}boundary], projectId [%env.Offensive360SastApi_ProjectId%], IsBreakBuildWhenVulnsFound [%env.ADO_BreakBuildWhenVulnsFound%]"
                     
                     ${'$'}fileBytes = [System.IO.File]::ReadAllBytes(${'$'}filePath)
                     ${'$'}fileContent = [System.Text.Encoding]::GetEncoding('iso-8859-1').GetString(${'$'}fileBytes)
@@ -138,7 +138,7 @@ object Build : BuildType({
                         write-host "**********************************************************************************************************************\n\n"
                         throw [System.Exception] "Vulnerabilities found and breaking the build."
                     }
-                    elseif (${'$'}apiResponse.vulnerabilities.length -gt 0 -and "%env:ADO_BreakBuildWhenVulnsFound%" -ne 'True') 
+                    elseif (${'$'}apiResponse.vulnerabilities.length -gt 0 -and "%env.ADO_BreakBuildWhenVulnsFound%" -ne 'True') 
                     {
                     	Write-Warning 'Vulnerabilities found and since ADO_BreakBuildWhenVulnsFound is set to false so continuing to build it.'
                     }
