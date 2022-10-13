@@ -88,7 +88,6 @@ object Build : BuildType({
             scriptMode = script {
                 content = """
                     Write-Host "Received scanning request successfully.."
-                    					
                     ${'$'}sourcePath = "%teamcity.build.checkoutDir%"
                     ${'$'}filePath = Split-Path -Path "${'$'}sourcePath"
                     ${'$'}filePath += "\%env.TEAMCITY_PROJECT_NAME%-%build.number%.zip"
@@ -97,15 +96,15 @@ object Build : BuildType({
                     ${'$'}buildId = "%env.TEAMCITY_PROJECT_NAME%-%build.number%.zip"
                     ${'$'}projectId = ${'$'}null
                     
-                    if("%env:Offensive360SastApi_ProjectId%" -ne "")
+                    if("%env.Offensive360SastApi_ProjectId%" -ne "")
                     {
-                    	${'$'}projectId = "%env:Offensive360SastApi_ProjectId%"
+                    	${'$'}projectId = "%env.Offensive360SastApi_ProjectId%"
                     }
                     
                     ${'$'}projectName = "Zenkins_Project_${'$'}buildId"
                     ${'$'}boundary = [System.Guid]::NewGuid().ToString()
                     
-                    Write-Host "Starting scanning for the project name [${'$'}projectName], accessToken [%env:Offensive360SastApi_AccessToken%], url [%env:Offensive360SastApi_BaseUrl%], buildId [${'$'}buildId], filePath [${'$'}filePath], boundary [${'$'}boundary], projectId [%env:Offensive360SastApi_ProjectId%]"
+                    Write-Host "Starting scanning for the project name [${'$'}projectName], accessToken [%env.Offensive360SastApi_AccessToken%], url [%env.Offensive360SastApi_BaseUrl%], buildId [${'$'}buildId], filePath [${'$'}filePath], boundary [${'$'}boundary], projectId [%env.Offensive360SastApi_ProjectId%]"
                     
                     ${'$'}fileBytes = [System.IO.File]::ReadAllBytes(${'$'}filePath)
                     ${'$'}fileContent = [System.Text.Encoding]::GetEncoding('iso-8859-1').GetString(${'$'}fileBytes)
@@ -128,7 +127,7 @@ object Build : BuildType({
                         "--${'$'}boundary--${'$'}LF"
                     ) -join ${'$'}LF
                     
-                    ${'$'}apiResponse = Invoke-RestMethod -Method Post -Uri ("{0}/app/api/ExternalScan/single-file" -f "%env:Offensive360SastApi_BaseUrl%".TrimEnd('/')) -ContentType "multipart/form-data; boundary=`"${'$'}boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer %env:Offensive360SastApi_AccessToken%"} -Body ${'$'}bodyLines
+                    ${'$'}apiResponse = Invoke-RestMethod -Method Post -Uri ("{0}/app/api/ExternalScan/single-file" -f "%env.Offensive360SastApi_BaseUrl%".TrimEnd('/')) -ContentType "multipart/form-data; boundary=`"${'$'}boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer %env.Offensive360SastApi_AccessToken%"} -Body ${'$'}bodyLines
                     
                     write-host ("total vulnerabilities count = {0}" -f ${'$'}apiResponse.vulnerabilities.length)
                     
