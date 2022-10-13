@@ -101,7 +101,7 @@ object Build : BuildType({
                     	${'$'}projectId = "%env.Offensive360SastApi_ProjectId%"
                     }
                     
-                    ${'$'}projectName = "Zenkins_Project_${'$'}buildId"
+                    ${'$'}projectName = "TeamCity_Project_${'$'}buildId"
                     ${'$'}boundary = [System.Guid]::NewGuid().ToString()
                     
                     Write-Host "Starting scanning for the project name [${'$'}projectName], accessToken [%env.Offensive360SastApi_AccessToken%], url [%env.Offensive360SastApi_BaseUrl%], buildId [${'$'}buildId], filePath [${'$'}filePath], boundary [${'$'}boundary], projectId [%env.Offensive360SastApi_ProjectId%]"
