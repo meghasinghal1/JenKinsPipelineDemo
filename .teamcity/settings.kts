@@ -128,14 +128,14 @@ object Build : BuildType({
                         "--${'$'}boundary--${'$'}LF"
                     ) -join ${'$'}LF
                     
-                    ${'$'}apiResponse = Invoke-RestMethod -Method Post -Uri ("{0}/app/api/ExternalScan/single-file" -f %env:Offensive360SastApi_BaseUrl%.TrimEnd('/')) -ContentType "multipart/form-data; boundary=`"${'$'}boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer %env:Offensive360SastApi_AccessToken%"} -Body ${'$'}bodyLines
+                    ${'$'}apiResponse = Invoke-RestMethod -Method Post -Uri ("{0}/app/api/ExternalScan/single-file" -f "%env:Offensive360SastApi_BaseUrl%".TrimEnd('/')) -ContentType "multipart/form-data; boundary=`"${'$'}boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer %env:Offensive360SastApi_AccessToken%"} -Body ${'$'}bodyLines
                     
                     write-host ("total vulnerabilities count = {0}" -f ${'$'}apiResponse.vulnerabilities.length)
                     
                     if (${'$'}apiResponse.vulnerabilities.length -gt 0 -and "%env:ADO_BreakBuildWhenVulnsFound%" -eq \'True\') 
                     {
                         write-host "\n\n**********************************************************************************************************************"
-                        write-host ("Offensive 360 vulnerability dashboard : {0}/Scan/showscan-{1}-{2}" -f %env:Offensive360SastUi_BaseUrl%.TrimEnd('/'), ${'$'}apiResponse.projectId, ${'$'}apiResponse.id)
+                        write-host ("Offensive 360 vulnerability dashboard : {0}/Scan/showscan-{1}-{2}" -f "%env:Offensive360SastUi_BaseUrl%".TrimEnd('/'), ${'$'}apiResponse.projectId, ${'$'}apiResponse.id)
                         write-host "**********************************************************************************************************************\n\n"
                         throw [System.Exception] "Vulnerabilities found and breaking the build."
                     }
