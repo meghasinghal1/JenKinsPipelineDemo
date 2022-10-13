@@ -54,6 +54,26 @@ object Build : BuildType({
                 content = """
                     write-host "zipRepo step called"
                     write-host "%build.number%"
+                    ${'$'}sourcePath = "%teamcity.build.checkoutDir%\\"
+                    write-host "${'$'}sourcePath"
+                    ${'$'}destinationPath = Split-Path -Path "${'$'}sourcePath"
+                    ${'$'}destinationPath += "\%env.TEAMCITY_PROJECT_NAME%-%build.number%.zip"
+                    Write-Host "${'$'}destinationPath"
+                    
+                    if(Test-Path -Path ${'$'}destinationPath -PathType Leaf)
+                    {
+                    	Remove-Item ${'$'}destinationPath
+                    }
+                    
+                    Add-Type -Assembly 'System.IO.Compression.FileSystem'
+                    ${'$'}zip = [System.IO.Compression.ZipFile]::Open(${'$'}destinationPath, 'create')
+                    ${'$'}files = [IO.Directory]::GetFiles(${'$'}sourcePath, "*" , [IO.SearchOption]::AllDirectories)
+                    foreach(${'$'}file in ${'$'}files)
+                    {
+                    	${'$'}relPath = ${'$'}file.Substring(${'$'}sourcePath.Length).Replace("\\", "/").Replace("\", "/")
+                    	${'$'}a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(${'$'}zip, ${'$'}file.Replace("\\", "/").Replace("\", "/"), ${'$'}relPath);
+                    }
+                    ${'$'}zip.Dispose()
                 """.trimIndent()
             }
         }
