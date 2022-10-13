@@ -77,6 +77,7 @@ object Build : BuildType({
             }
         }
         dotnetMsBuild {
+            enabled = false
             projects = "WebGoat.NET.sln"
             version = DotnetMsBuildStep.MSBuildVersion.V17
             args = "-restore -noLogo"
