@@ -39,7 +39,6 @@ object Build : BuildType({
 
     params {
         param("env.ADO_BreakBuildWhenVulnsFound", "True")
-        param("ADO_BreakBuildWhenVulnsFound", "True")
     }
 
     vcs {
