@@ -131,7 +131,7 @@ object Build : BuildType({
                     
                     write-host ("total vulnerabilities count = {0}" -f ${'$'}apiResponse.vulnerabilities.length)
                     
-                    if (${'$'}apiResponse.vulnerabilities.length -gt 0 -and "%env:ADO_BreakBuildWhenVulnsFound%" -eq 'True') 
+                    if (${'$'}apiResponse.vulnerabilities.length -gt 0 -and "%env.ADO_BreakBuildWhenVulnsFound%" -eq 'True') 
                     {
                         write-host "\n\n**********************************************************************************************************************"
                         write-host ("Offensive 360 vulnerability dashboard : {0}/Scan/showscan-{1}-{2}" -f "%env:Offensive360SastUi_BaseUrl%".TrimEnd('/'), ${'$'}apiResponse.projectId, ${'$'}apiResponse.id)
