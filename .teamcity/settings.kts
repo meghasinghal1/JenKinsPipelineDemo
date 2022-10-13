@@ -37,6 +37,10 @@ project {
 object Build : BuildType({
     name = "Build"
 
+    params {
+        param("ADO_BreakBuildWhenVulnsFound", "True")
+    }
+
     vcs {
         root(DslContext.settingsRoot)
     }
