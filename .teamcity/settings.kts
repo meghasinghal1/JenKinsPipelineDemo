@@ -52,8 +52,6 @@ object Build : BuildType({
             name = "zipRepo"
             scriptMode = script {
                 content = """
-                    write-host "zipRepo step called"
-                    write-host "%build.number%"
                     ${'$'}sourcePath = "%teamcity.build.checkoutDir%\\"
                     write-host "${'$'}sourcePath"
                     ${'$'}destinationPath = Split-Path -Path "${'$'}sourcePath"
