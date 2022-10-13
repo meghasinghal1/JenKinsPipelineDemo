@@ -43,6 +43,7 @@ object Build : BuildType({
 
     steps {
         maven {
+            enabled = false
             goals = "clean test"
             pomLocation = ".teamcity/pom.xml"
             runnerArgs = "-Dmaven.test.failure.ignore=true"
