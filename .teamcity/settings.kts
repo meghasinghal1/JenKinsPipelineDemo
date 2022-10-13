@@ -48,17 +48,17 @@ object Build : BuildType({
             pomLocation = ".teamcity/pom.xml"
             runnerArgs = "-Dmaven.test.failure.ignore=true"
         }
-        dotnetMsBuild {
-            projects = "WebGoat.NET.sln"
-            version = DotnetMsBuildStep.MSBuildVersion.V17
-            args = "-restore -noLogo"
-            sdk = "3.5"
-        }
         powerShell {
             name = "zipRepo"
             scriptMode = script {
                 content = """write-host "zipRepo step called""""
             }
+        }
+        dotnetMsBuild {
+            projects = "WebGoat.NET.sln"
+            version = DotnetMsBuildStep.MSBuildVersion.V17
+            args = "-restore -noLogo"
+            sdk = "3.5"
         }
     }
 
