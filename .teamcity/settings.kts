@@ -41,6 +41,7 @@ object Build : BuildType({
         param("env.Offensive360SastApi_ProjectId", "")
         param("env.Offensive360SastApi_AccessToken", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjYyMDMwNGI1YjE3NTFhMmM4YjdkNGY3YSIsIlVzZXJuYW1lIjoiYWRtaW4gMjoyNSBQTSIsInJvbGUiOiJFeHRlcm5hbCIsIkppcmFBdXRoZW50aWNhdGVkIjoiZmFsc2UiLCJuYmYiOjE2NjIxMjg3MzYsImV4cCI6MTk3NzQ4ODczNiwiaWF0IjoxNjYyMTI4NzM2fQ.rYKbTEXm2-Z-UALsyaCu13npb67igi2Ufz13Mdigd9s")
         param("env.Offensive360SastApi_BaseUrl", "http://80.208.226.84:1800")
+        param("env.Offensive360SastUi_BaseUrl", "http://80.208.226.84")
         param("env.ADO_BreakBuildWhenVulnsFound", "True")
     }
 
