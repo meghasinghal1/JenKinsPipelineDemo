@@ -53,9 +53,9 @@ object Build : BuildType({
             scriptMode = script {
                 content = """
                     write-host "zipRepo step called"
-                    write-host "${'$'}{teamcity.build.checkoutDir}"
-                    write-host "${'$'}{env.TEAMCITY_PROJECT_NAME}"
-                    write-host "${'$'}{build.number}"
+                    write-host "${'$'}(teamcity.build.checkoutDir)"
+                    write-host "${'$'}(env.TEAMCITY_PROJECT_NAME)"
+                    write-host "${'$'}(build.number)"
                 """.trimIndent()
             }
         }
