@@ -53,10 +53,7 @@ object Build : BuildType({
             scriptMode = script {
                 content = """
                     write-host "zipRepo step called"
-                    write-host "${'$'}{build.number}"
-                    write-host "${'$'}build.number"
-                    write-host ${'$'}{build.number}
-                    write-host "${'$'}(build.number)"
+                    write-host "%build.number%"
                 """.trimIndent()
             }
         }
