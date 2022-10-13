@@ -41,16 +41,16 @@ object Build : BuildType({
     }
 
     steps {
+        maven {
+            goals = "clean test"
+            pomLocation = ".teamcity/pom.xml"
+            runnerArgs = "-Dmaven.test.failure.ignore=true"
+        }
         dotnetMsBuild {
             projects = "WebGoat.NET.sln"
             version = DotnetMsBuildStep.MSBuildVersion.V17
             args = "-restore -noLogo"
             sdk = "3.5"
-        }
-        maven {
-            goals = "clean test"
-            pomLocation = ".teamcity/pom.xml"
-            runnerArgs = "-Dmaven.test.failure.ignore=true"
         }
     }
 
