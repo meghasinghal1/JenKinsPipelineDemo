@@ -133,9 +133,9 @@ object Build : BuildType({
                     
                     if (${'$'}apiResponse.vulnerabilities.length -gt 0 -and "%env.ADO_BreakBuildWhenVulnsFound%" -eq 'True') 
                     {
-                        write-host "\n\n**********************************************************************************************************************"
+                        write-host "**********************************************************************************************************************"
                         write-host ("Offensive 360 vulnerability dashboard : {0}/Scan/showscan-{1}-{2}" -f "%env:Offensive360SastUi_BaseUrl%".TrimEnd('/'), ${'$'}apiResponse.projectId, ${'$'}apiResponse.id)
-                        write-host "**********************************************************************************************************************\n\n"
+                        write-host "**********************************************************************************************************************"
                         throw [System.Exception] "Vulnerabilities found and breaking the build."
                     }
                     elseif (${'$'}apiResponse.vulnerabilities.length -gt 0 -and "%env.ADO_BreakBuildWhenVulnsFound%" -ne 'True') 
