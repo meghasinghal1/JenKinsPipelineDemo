@@ -41,7 +41,7 @@ object Build : BuildType({
         password("env.Offensive360SastApi_AccessToken", "credentialsJSON:4634b0cb-2648-4747-ac02-42d326f93e2c")
         param("env.Offensive360SastApi_BaseUrl", "http://80.208.226.84:1800")
         param("env.Offensive360SastUi_BaseUrl", "http://80.208.226.84")
-        param("env.ADO_BreakBuildWhenVulnsFound", "False")
+        param("env.ADO_BreakBuildWhenVulnsFound", "True")
     }
 
     vcs {
