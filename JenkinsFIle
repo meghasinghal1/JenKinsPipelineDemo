@@ -2,6 +2,11 @@ pipeline {
     agent any
 
     stages {
+    	 stage('HelloTest') {
+            steps {
+                echo "hello world"
+            }
+        }
         stage('zipRepo') {
             steps {
                 powershell '''
