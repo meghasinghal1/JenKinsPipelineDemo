@@ -6,7 +6,7 @@ pipeline {
             steps {
                 echo "hello world before"
 		echo "${env.JOB_NAME}"
-		echo "${env.PSModulePath}"
+		echo "${env.Path}"
 		echo "hello world after"
             }
         }
