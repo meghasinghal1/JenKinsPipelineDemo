@@ -7,6 +7,13 @@ pipeline {
                 echo "hello world"
             }
         }
+	stage('HelloPSTest') {
+            steps {
+	    	powershell '
+			write-host "hello world"
+		'
+            }
+        }
 	stage('HelloTest1') {
             steps {
                 echo "hello world1"
