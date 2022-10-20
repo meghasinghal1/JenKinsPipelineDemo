@@ -9,9 +9,7 @@ pipeline {
         }
 	stage('HelloPSTest') {
             steps {
-	    	powershell '''
-			wriate-host "hello world"
-		'''
+	    	powershell 'write-host "hello word"'
             }
         }
 	stage('HelloTest1') {
