@@ -5,7 +5,7 @@ pipeline {
     	 stage('HelloTest') {
             steps {
                 echo "hello world before"
-		sh "/usr/local/bin/pwsh -Command \"Get-Host | Select-Object Version\""
+		echo "${env.JOB_NAME}"
 		echo "hello world after"
             }
         }
