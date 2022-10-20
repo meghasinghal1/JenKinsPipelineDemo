@@ -4,12 +4,14 @@ pipeline {
     stages {
     	 stage('HelloTest') {
             steps {
-                echo "hello world"
+                echo "hello world before"
+		sh "/usr/local/bin/pwsh -Command \"Get-Host | Select-Object Version\""
+		echo "hello world after"
             }
         }
 	stage('HelloPSTest') {
             steps {
-	    	powershell 'write-host "hello word"'
+	    	powershell 'write-host "hello PS word"'
             }
         }
 	stage('HelloTest1') {
