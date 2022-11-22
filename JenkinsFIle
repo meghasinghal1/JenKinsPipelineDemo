@@ -41,9 +41,9 @@ pipeline {
 
 					$buildId = "${env:JOB_NAME}-${env:BUILD_NUMBER}"
 					$projectId = $null
-					$sca = $null
-					$malware = $null
-					$licence = $null
+					$sca = $false
+					$malware = $false
+					$licence = $false
 
 					if("$env:Offensive360SastApi_ProjectId" -ne "")
 					{
