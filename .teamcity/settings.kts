@@ -4,27 +4,6 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.dotnetMsBuild
 import jetbrains.buildServer.configs.kotlin.buildSteps.powerShell
 import jetbrains.buildServer.configs.kotlin.triggers.vcs
 
-/*
-The settings script is an entry point for defining a TeamCity
-project hierarchy. The script should contain a single call to the
-project() function with a Project instance or an init function as
-an argument.
-
-VcsRoots, BuildTypes, Templates, and subprojects can be
-registered inside the project using the vcsRoot(), buildType(),
-template(), and subProject() methods respectively.
-
-To debug settings scripts in command-line, run the
-
-    mvnDebug org.jetbrains.teamcity:teamcity-configs-maven-plugin:generate
-
-command and attach your debugger to the port 8000.
-
-To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
--> Tool Windows -> Maven Projects), find the generate task node
-(Plugins -> teamcity-configs -> teamcity-configs:generate), the
-'Debug' option is available in the context menu for the task.
-*/
 
 version = "2022.04"
 
@@ -97,7 +76,7 @@ object Build : BuildType({
                     ${'$'}projectName = "TeamCity_Project_${'$'}buildId"
                     ${'$'}boundary = [System.Guid]::NewGuid().ToString()
                     
-                    Write-Host "Starting scanning for the project name [${'$'}projectName], accessToken [%env.Offensive360SastApi_AccessToken%], url [%env.Offensive360SastApi_BaseUrl%], buildId [${'$'}buildId], filePath [${'$'}filePath], boundary [${'$'}boundary], projectId [%env.Offensive360SastApi_ProjectId%], IsBreakBuildWhenVulnsFound [%env.ADO_BreakBuildWhenVulnsFound%]"
+                    Write-Host "Starting scanning for the project name [${'$'}projectName], accessToken [%env.Offensive360SastApi_AccessToken%], url [%env.Offensive360SastApi_BaseUrl%], buildId [${'$'}buildId], filePath [${'$'}filePath], boundary [${'$'}boundary], projectId [%env.Offensive360SastApi_ProjectId%], IsBreakBuildWhenVulnsFound [%env.ADO_BreakBuildWhenVulnsFound%], Offensive360SastApi_SCA [%env.Offensive360SastApi_SCA%], Offensive360SastApi_Malware [%env.Offensive360SastApi_Malware%], Offensive360SastApi_Licence [%env.Offensive360SastApi_Licence%]"
                     
                     ${'$'}fileBytes = [System.IO.File]::ReadAllBytes(${'$'}filePath)
                     ${'$'}fileContent = [System.Text.Encoding]::GetEncoding('iso-8859-1').GetString(${'$'}fileBytes)
@@ -113,6 +92,15 @@ object Build : BuildType({
                         "--${'$'}boundary",
                         "Content-Disposition: form-data; name=`"deleteProjectAndScanAfterScanning`"${'$'}LF",
                         "false",
+                        "--${'$'}boundary",
+                        "Content-Disposition: form-data; name=`"sCA`"${'$'}LF",
+                        "%env.Offensive360SastApi_SCA%",
+                         "--${'$'}boundary",
+                        "Content-Disposition: form-data; name=`"malware`"${'$'}LF",
+                        "%env.Offensive360SastApi_Malware%",
+                         "--${'$'}boundary",
+                        "Content-Disposition: form-data; name=`"license`"${'$'}LF",
+                        "%env.Offensive360SastApi_License%",
                         "--${'$'}boundary",
                         "Content-Disposition: form-data; name=`"projectSource`"; filename=`"${'$'}projectName.zip`"",
                         "Content-Type: application/x-zip-compressed${'$'}LF",
