@@ -42,6 +42,9 @@ object Build : BuildType({
         param("env.Offensive360SastApi_BaseUrl", "http://80.208.226.84:1800")
         param("env.Offensive360SastUi_BaseUrl", "http://80.208.226.84")
         param("env.ADO_BreakBuildWhenVulnsFound", "True")
+        param("env.Offensive360SastApi_AllowDependencyScan", "True")
+        param("env.Offensive360SastApi_AllowMalwareScan", "True")
+        param("env.Offensive360SastApi_AllowLicenseScan", "True")
     }
 
     vcs {
