@@ -34,8 +34,9 @@ pipeline {
                 powershell '''
 					Write-Host "Received scanning request successfully.."
 					
-					Write-Host "${env.JOB_BASE_NAME}"
-					Write-Host "${env.JOB_NAME}"
+					Write-Host "$env.JOB_BASE_NAME"
+					Write-Host "$env.JOB_NAME"
+					Write-Host "****************"
 					
 					$sourcePath = "${env:WORKSPACE}"
 					$filePath = Split-Path -Path "$sourcePath"
