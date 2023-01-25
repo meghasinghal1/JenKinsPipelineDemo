@@ -34,6 +34,9 @@ pipeline {
                 powershell '''
 					Write-Host "Received scanning request successfully.."
 					
+					Write-Host "${env.JOB_BASE_NAME}"
+					Write-Host "${env.JOB_NAME}"
+					
 					$sourcePath = "${env:WORKSPACE}"
 					$filePath = Split-Path -Path "$sourcePath"
 					$filePath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
@@ -43,7 +46,6 @@ pipeline {
 					$allowDependencyScan = $false
 				    $allowMalwareScan = $false
 				    $allowLicenseScan = $false
-				    $sourceType = 3 #Jenkins
 
 					if("$env:Offensive360SastApi_ProjectId" -ne "")
 					{
@@ -92,7 +94,7 @@ pipeline {
 					    "$allowLicenseScan",
 					    "--$boundary",
 					    "Content-Disposition: form-data; name=`"externalScanSourceType`"$LF",
-					    "$sourceType",
+					    "Jenkins",
 					    "--$boundary",
 						"Content-Disposition: form-data; name=`"fileSource`"; filename=`"$projectName.zip`"",
 						"Content-Type: application/x-zip-compressed$LF",
