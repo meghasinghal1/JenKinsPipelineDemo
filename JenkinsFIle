@@ -33,9 +33,12 @@ pipeline {
             steps {
                 powershell '''
 					Write-Host "Received scanning request successfully.."
-					
-					Write-Host "$env.JOB_BASE_NAME"
-					Write-Host "$env.JOB_NAME"
+					$a = "${env:BUILD_URL}"
+					$b = "${env:JOB_URL}"
+					$c = "${env:PROJECT_URL}"
+					Write-Host "$a"
+					Write-Host "$b"
+					Write-Host "$c"
 					Write-Host "****************"
 					
 					$sourcePath = "${env:WORKSPACE}"
