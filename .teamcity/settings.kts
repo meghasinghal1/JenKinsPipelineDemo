@@ -84,10 +84,8 @@ object Build : BuildType({
             scriptMode = script {
                 content = """
                     Write-Host "Received scanning request successfully.."
-                    Write-Host "*****************"
+                    
                     ${'$'}selfUrl = "%teamcity.serverUrl%/buildConfiguration/%system.teamcity.buildType.id%/%teamcity.build.id%?buildTypeTab=overview&hideProblemsFromDependencies=false&hideTestsFromDependencies=false&buildTab=log&focusLine=0&logView=flowAware"  
-                    Write-Host "${'$'}selfUrl"
-                    Write-Host "*****************"
                     ${'$'}sourcePath = "%teamcity.build.checkoutDir%"
                     ${'$'}filePath = Split-Path -Path "${'$'}sourcePath"
                     ${'$'}filePath += "\%env.TEAMCITY_PROJECT_NAME%-%build.number%.zip"
@@ -132,6 +130,9 @@ object Build : BuildType({
                         "--${'$'}boundary",
                         "Content-Disposition: form-data; name=`"externalScanSourceType`"${'$'}LF",
                         "TeamCity",
+                        "--${'$'}boundary",
+                        "Content-Disposition: form-data; name=`"pipelineUrl`"${'$'}LF",
+                        "${'$'}selfUrl",
                         "--${'$'}boundary",
                         "Content-Disposition: form-data; name=`"fileSource`"; filename=`"${'$'}projectName.zip`"",
                         "Content-Type: application/x-zip-compressed${'$'}LF",
