@@ -84,14 +84,16 @@ object Build : BuildType({
             scriptMode = script {
                 content = """
                     Write-Host "Received scanning request successfully.."
+                    
+                    ${'$'}selfUrl = "%teamcity.serverUrl%/buildConfiguration/%system.teamcity.buildType.id%/%teamcity.build.id%?buildTypeTab=overview&hideProblemsFromDependencies=false&hideTestsFromDependencies=false&buildTab=log&focusLine=0&logView=flowAware"  
+                    Write-Host "${'$'}selfUrl"
                     ${'$'}sourcePath = "%teamcity.build.checkoutDir%"
                     ${'$'}filePath = Split-Path -Path "${'$'}sourcePath"
                     ${'$'}filePath += "\%env.TEAMCITY_PROJECT_NAME%-%build.number%.zip"
                     Write-Host "${'$'}filePath"
                     
                     ${'$'}buildId = "%env.TEAMCITY_PROJECT_NAME%-%build.number%.zip"
-                    ${'$'}projectId = ${'$'}null
-                    ${'$'}sourceType = 4 #TeamCity
+                    ${'$'}projectId = ${'$'}null                    
                     
                     if("%env.Offensive360SastApi_ProjectId%" -ne "")
                     {
@@ -128,7 +130,7 @@ object Build : BuildType({
                         "%env.Offensive360SastApi_AllowLicenseScan%",
                         "--${'$'}boundary",
                         "Content-Disposition: form-data; name=`"externalScanSourceType`"${'$'}LF",
-                        "${'$'}sourceType",
+                        "TeamCity",
                         "--${'$'}boundary",
                         "Content-Disposition: form-data; name=`"fileSource`"; filename=`"${'$'}projectName.zip`"",
                         "Content-Type: application/x-zip-compressed${'$'}LF",
