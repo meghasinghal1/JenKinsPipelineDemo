@@ -62,7 +62,7 @@ pipeline {
 					    $allowLicenseScan = "$env:Offensive360SastApi_AllowLicenseScan"
 				    }
 
-					$projectName = "Zenkins_Project_$buildId"
+					$projectName = "$buildId"
 					$boundary = [System.Guid]::NewGuid().ToString()
 
 					Write-Host "Starting scanning for the project name [$projectName], accessToken [$env:Offensive360SastApi_AccessToken], url [$env:Offensive360SastApi_BaseUrl], buildId [$buildId], filePath [$filePath], boundary [$boundary], projectId [$env:Offensive360SastApi_ProjectId], AllowDependencyScan [$allowDependencyScan], AllowMalwareScan [$allowMalwareScan], AllowLicenseScan [$allowLicenseScan]"
