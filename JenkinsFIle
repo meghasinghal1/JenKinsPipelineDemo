@@ -22,6 +22,7 @@ pipeline {
                     foreach($file in $files)
                     {
                         $relPath = $file.Substring($sourcePath.Length).Replace("/", "\\")
+			write-host "$relPath"
                         $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("/", "\\"), $relPath);
                     }
                     $zip.Dispose()
