@@ -36,7 +36,7 @@ pipeline {
 					
 					$selfUrl = "${env:BUILD_URL}console"
 					$sourcePath = "${env:WORKSPACE}"
-					$filePath = Split-Path -Path "$sourcePath"
+					$filePath = Split-Path -Path "$sourcePath\\"
 					$filePath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
 					Write-Host "$destinationPath"
 
