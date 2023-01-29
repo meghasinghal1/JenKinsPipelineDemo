@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('zipRepo') {
             steps {
-	    	echo ${HOME}
+	    	echo "${HOME}"
                 pwsh '''
 					$sourcePath = "${env:WORKSPACE}"
 					write-host "$sourcePath"
