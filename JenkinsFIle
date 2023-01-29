@@ -126,19 +126,13 @@ pipeline {
 						Write-Warning \'No vulnerabilities found and continuing to build it.\'
 					}
 
-					Write-Host "Finished SAST file scanning."
+					Write-Host "Finished SAST project scanning."
 					
 					if(Test-Path -Path $destinationPath -PathType Leaf)
 					{
 					    Remove-Item $destinationPath
 					}
 					'''
-            }
-        }
-		stage('build') {
-            steps {
-                sh 'make' 
-                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true 
             }
         }
     }
