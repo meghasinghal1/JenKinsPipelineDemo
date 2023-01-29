@@ -4,13 +4,12 @@ pipeline {
     stages {
         stage('zipRepo') {
             steps {
-	    	echo "${HOME}"
                 pwsh '''
-					$sourcePath = "${env:WORKSPACE}"
-					write-host "$sourcePath"
-					$destinationPath = Split-Path -Path "$sourcePath"
-					$destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
-					Write-Host "$destinationPath"
+		    $sourcePath = "${env:WORKSPACE}"
+	    	    write-host "$sourcePath"
+		    $destinationPath = Split-Path -Path "$sourcePath"
+		    $destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
+		    Write-Host "$destinationPath"
 					
                     if(Test-Path -Path $destinationPath -PathType Leaf)
                     {
