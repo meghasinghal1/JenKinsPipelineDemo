@@ -19,6 +19,9 @@ pipeline {
 
                     Add-Type -Assembly \'System.IO.Compression.FileSystem\'
                     $zip = [System.IO.Compression.ZipFile]::Open($destinationPath, \'create\')
+					write-host "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+					write-host "$sourcePath"
+					write-host "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                     $files = [IO.Directory]::GetFiles($sourcePath, "*" , [IO.SearchOption]::AllDirectories)
                     foreach($file in $files)
                     {
