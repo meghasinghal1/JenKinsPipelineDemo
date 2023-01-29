@@ -5,11 +5,11 @@ pipeline {
         stage('zipRepo') {
             steps {
                 pwsh '''
-		    $sourcePath = "${env:WORKSPACE}"
-	    	    write-host "$sourcePath"
-		    $destinationPath = Split-Path -Path "$sourcePath"
-		    $destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
-		    Write-Host "$destinationPath"
+					$sourcePath = "${env:WORKSPACE}"
+					write-host "$sourcePath"
+					$destinationPath = Split-Path -Path "$sourcePath"
+					$destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
+					Write-Host "$destinationPath"
 					
                     if(Test-Path -Path $destinationPath -PathType Leaf)
                     {
@@ -21,9 +21,8 @@ pipeline {
                     $files = [IO.Directory]::GetFiles($sourcePath, "*" , [IO.SearchOption]::AllDirectories)
                     foreach($file in $files)
                     {
-                        $relPath = $file.Substring($sourcePath.Length).TrimStart('/')
-			write-host "$relPath"
-                        $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file, $relPath);
+                        $relPath = $file.Substring($sourcePath.Length).TrimStart('\\').TrimStart('/').Replace("\\\\", "/").Replace("\\", "/")
+                        $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("\\\\", "/").Replace("\\", "/"), $relPath);
                     }
                     $zip.Dispose()
 				
@@ -37,15 +36,14 @@ pipeline {
 					
 					$selfUrl = "${env:BUILD_URL}console"
 					$sourcePath = "${env:WORKSPACE}"
-					$destinationPath = Split-Path -Path "$sourcePath"
-					$destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
+					$filePath = Split-Path -Path "$sourcePath"
+					$filePath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
 					Write-Host "$destinationPath"
 
 					$buildId = "${env:JOB_NAME}-${env:BUILD_NUMBER}"
 					$allowDependencyScan = $false
 				    $allowMalwareScan = $false
 				    $allowLicenseScan = $false
-				    $sourceType = 3 #Jenkins
 
 					if("$env:Offensive360SastApi_ProjectId" -ne "")
 					{
@@ -67,9 +65,9 @@ pipeline {
 					$projectName = "Zenkins_Project_$buildId"
 					$boundary = [System.Guid]::NewGuid().ToString()
 
-					Write-Host "Starting scanning for the project name [$projectName], accessToken [$env:Offensive360SastApi_AccessToken], url [$env:Offensive360SastApi_BaseUrl], buildId [$buildId], filePath [$destinationPath], boundary [$boundary], projectId [$env:Offensive360SastApi_ProjectId], AllowDependencyScan [$allowDependencyScan], AllowMalwareScan [$allowMalwareScan], AllowLicenseScan [$allowLicenseScan]"
+					Write-Host "Starting scanning for the project name [$projectName], accessToken [$env:Offensive360SastApi_AccessToken], url [$env:Offensive360SastApi_BaseUrl], buildId [$buildId], filePath [$filePath], boundary [$boundary], projectId [$env:Offensive360SastApi_ProjectId], AllowDependencyScan [$allowDependencyScan], AllowMalwareScan [$allowMalwareScan], AllowLicenseScan [$allowLicenseScan]"
 
-					$fileBytes = [System.IO.File]::ReadAllBytes($destinationPath)
+					$fileBytes = [System.IO.File]::ReadAllBytes($filePath)
 					$fileContent = [System.Text.Encoding]::GetEncoding(\'iso-8859-1\').GetString($fileBytes)
 
 					$LF = "`r`n"
@@ -94,7 +92,7 @@ pipeline {
 					    "$allowLicenseScan",
 					    "--$boundary",
 					    "Content-Disposition: form-data; name=`"externalScanSourceType`"$LF",
-					    "$sourceType",
+					    "Jenkins",
 					    "--$boundary",
 						"Content-Disposition: form-data; name=`"pipelineUrl`"$LF",
 						"$selfUrl",
@@ -135,12 +133,6 @@ pipeline {
 					    Remove-Item $destinationPath
 					}
 					'''
-            }
-        }
-		stage('build') {
-            steps {
-                sh 'make' 
-                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true 
             }
         }
     }
