@@ -5,9 +5,9 @@ pipeline {
         stage('zipRepo') {
             steps {
                 pwsh '''
-					$sourcePath = "${env:WORKSPACE}"
+					$sourcePath = "${env:WORKSPACE}\\"
 					write-host "$sourcePath"
-					$destinationPath = Split-Path -Path "$sourcePath\\"
+					$destinationPath = Split-Path -Path "$sourcePath"
 					$destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
 					Write-Host "$destinationPath"
 					
@@ -21,10 +21,8 @@ pipeline {
                     $files = [IO.Directory]::GetFiles($sourcePath, "*" , [IO.SearchOption]::AllDirectories)
                     foreach($file in $files)
                     {
-						Write-Host "file = $file"
-                        $relPath = $file.Substring($sourcePath.Length).Replace("/", "\\").Replace("//", "\\\\")
-						Write-Host "relPath = $relPath"
-                        $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("/", "\\").Replace("//", "\\\\"), $relPath);
+                        $relPath = $file.Substring($sourcePath.Length).Replace("\\\\", "/").Replace("\\", "/")
+                        $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("\\\\", "/").Replace("\\", "/"), $relPath);
                     }
                     $zip.Dispose()
 				
@@ -38,7 +36,7 @@ pipeline {
 					
 					$selfUrl = "${env:BUILD_URL}console"
 					$sourcePath = "${env:WORKSPACE}"
-					$destinationPath = Split-Path -Path "$sourcePath\\"
+					$destinationPath = Split-Path -Path "$sourcePath"
 					$destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
 					Write-Host "$destinationPath"
 
@@ -46,6 +44,7 @@ pipeline {
 					$allowDependencyScan = $false
 				    $allowMalwareScan = $false
 				    $allowLicenseScan = $false
+				    $sourceType = 3 #Jenkins
 
 					if("$env:Offensive360SastApi_ProjectId" -ne "")
 					{
@@ -64,11 +63,11 @@ pipeline {
 					    $allowLicenseScan = "$env:Offensive360SastApi_AllowLicenseScan"
 				    }
 
-					$projectName = "$buildId"
+					$projectName = "Zenkins_Project_$buildId"
 					$boundary = [System.Guid]::NewGuid().ToString()
 
 					Write-Host "Starting scanning for the project name [$projectName], accessToken [$env:Offensive360SastApi_AccessToken], url [$env:Offensive360SastApi_BaseUrl], buildId [$buildId], filePath [$destinationPath], boundary [$boundary], projectId [$env:Offensive360SastApi_ProjectId], AllowDependencyScan [$allowDependencyScan], AllowMalwareScan [$allowMalwareScan], AllowLicenseScan [$allowLicenseScan]"
-					
+
 					$fileBytes = [System.IO.File]::ReadAllBytes($destinationPath)
 					$fileContent = [System.Text.Encoding]::GetEncoding(\'iso-8859-1\').GetString($fileBytes)
 
@@ -94,7 +93,7 @@ pipeline {
 					    "$allowLicenseScan",
 					    "--$boundary",
 					    "Content-Disposition: form-data; name=`"externalScanSourceType`"$LF",
-					    "Jenkins",
+					    "$sourceType",
 					    "--$boundary",
 						"Content-Disposition: form-data; name=`"pipelineUrl`"$LF",
 						"$selfUrl",
@@ -128,13 +127,19 @@ pipeline {
 						Write-Warning \'No vulnerabilities found and continuing to build it.\'
 					}
 
-					Write-Host "Finished SAST project scanning."
+					Write-Host "Finished SAST file scanning."
 					
 					if(Test-Path -Path $destinationPath -PathType Leaf)
 					{
 					    Remove-Item $destinationPath
 					}
 					'''
+            }
+        }
+		stage('build') {
+            steps {
+                sh 'make' 
+                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true 
             }
         }
     }
