@@ -22,7 +22,7 @@ pipeline {
 					write-host "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 					write-host "$sourcePath"
 					write-host "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                    $files = [IO.Directory]::GetFiles("", "*" , [IO.SearchOption]::AllDirectories)
+                    $files = [IO.Directory]::GetFiles("/var/jenkins_home/workspace/JenKinsPipelineDemo-test", "*" , [IO.SearchOption]::AllDirectories)
                     foreach($file in $files)
                     {
                         $relPath = $file.Substring($sourcePath.Length).Replace("\\\\", "/").Replace("\\", "/")
