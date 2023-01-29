@@ -4,11 +4,10 @@ pipeline {
     stages {
         stage('zipRepo') {
             steps {
-                pwsh '''
-					$sourcePath = "${env:WORKSPACE}\\"
-					$sourcePath = $sourcePath.replace("/","\\")
+                powershell '''
+					$sourcePath = "${env:WORKSPACE}"
 					write-host "$sourcePath"
-					$destinationPath = Split-Path -Path "$sourcePath"
+					$destinationPath = Split-Path -Path "$sourcePath\\"
 					$destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
 					Write-Host "$destinationPath"
 					
@@ -19,10 +18,7 @@ pipeline {
 
                     Add-Type -Assembly \'System.IO.Compression.FileSystem\'
                     $zip = [System.IO.Compression.ZipFile]::Open($destinationPath, \'create\')
-					write-host "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-					write-host "$sourcePath"
-					write-host "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                    $files = [IO.Directory]::GetFiles("/var/jenkins_home/workspace/JenKinsPipelineDemo-test", "*" , [IO.SearchOption]::AllDirectories)
+                    $files = [IO.Directory]::GetFiles($sourcePath, "*" , [IO.SearchOption]::AllDirectories)
                     foreach($file in $files)
                     {
                         $relPath = $file.Substring($sourcePath.Length).Replace("\\\\", "/").Replace("\\", "/")
@@ -35,7 +31,7 @@ pipeline {
         }
 		stage('uploadZip') {
             steps {
-                pwsh '''
+                powershell '''
 					Write-Host "Received scanning request successfully.."
 					
 					$selfUrl = "${env:BUILD_URL}console"
