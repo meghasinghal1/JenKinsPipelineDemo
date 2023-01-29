@@ -6,6 +6,7 @@ pipeline {
             steps {
                 pwsh '''
 					$sourcePath = "${env:WORKSPACE}\\"
+					$sourcePath = $sourcePath.replace("/","\\")
 					write-host "$sourcePath"
 					$destinationPath = Split-Path -Path "$sourcePath"
 					$destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
