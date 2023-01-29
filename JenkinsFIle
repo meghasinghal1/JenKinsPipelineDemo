@@ -21,8 +21,8 @@ pipeline {
                     $files = [IO.Directory]::GetFiles($sourcePath, "*" , [IO.SearchOption]::AllDirectories)
                     foreach($file in $files)
                     {
-                        $relPath = $file.Substring($sourcePath.Length).Replace("\\", "/")
-                        $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("\\", "/"), $relPath);
+                        $relPath = $file.Substring($sourcePath.Length).Replace("/", "\\")
+                        $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("/", "\\"), $relPath);
                     }
                     $zip.Dispose()
 				
