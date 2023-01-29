@@ -21,7 +21,7 @@ pipeline {
                     $files = [IO.Directory]::GetFiles($sourcePath, "*" , [IO.SearchOption]::AllDirectories)
                     foreach($file in $files)
                     {
-                        $relPath = $file.Substring($sourcePath.Length)
+                        $relPath = $file.Substring($sourcePath.Length).TrimStart('/')
 			write-host "$relPath"
                         $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file, $relPath);
                     }
