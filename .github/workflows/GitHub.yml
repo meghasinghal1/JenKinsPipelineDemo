@@ -5,12 +5,10 @@ on:
     branches: [ master ]
 
 jobs:
-  zip-repo:
+  sast-scan:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
-      - name: Printing hello
+      - name: Zip Repo
         shell: pwsh
         run: |
           $sourcePath = "${{ github.workspace }}"
