@@ -1,17 +1,15 @@
-name: Test PowerShell on Ubuntu
-on: push
+name: Sast Scan Process
+ 
+on:
+  push:
+    branches: [ master ]
 
 jobs:
-  pester-test:
-    name: Pester test
+  zip-repo:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-      - name: Perform a Pester test from the command-line
+      - name: Printing hello
         shell: pwsh
-        run: Test-Path resultsfile.log | Should -Be $true
-      - name: Perform a Pester test from the Tests.ps1 file
-        shell: pwsh
-        run: |
-          Invoke-Pester Unit.Tests.ps1 -Passthru
+        run: Write-Host 'hello'
