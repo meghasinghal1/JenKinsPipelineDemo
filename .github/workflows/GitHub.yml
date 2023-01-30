@@ -48,27 +48,27 @@ jobs:
           $allowMalwareScan = $false
           $allowLicenseScan = $false
 
-          if("${{ vars.Offensive360SastApi_ProjectId }}" -ne "")
+          if("${{ vars.OFFENSIVE360SASTAPI_PROJECTID }}" -ne "")
           {
-              $projectId = "${{ vars.Offensive360SastApi_ProjectId }}"
+              $projectId = "${{ vars.OFFENSIVE360SASTAPI_PROJECTID }}"
           }
-          if("${{ vars.Offensive360SastApi_AllowDependencyScan }}" -ne "")
+          if("${{ vars.OFFENSIVE360SASTAPI_ALLOWDEPENDENCYSCAN }}" -ne "")
           {
-              $allowDependencyScan = "${{ vars.Offensive360SastApi_AllowDependencyScan }}"
+              $allowDependencyScan = "${{ vars.OFFENSIVE360SASTAPI_ALLOWDEPENDENCYSCAN }}"
           }
-          if("${{ vars.Offensive360SastApi_AllowMalwareScan }}" -ne "")
+          if("${{ vars.OFFENSIVE360SASTAPI_ALLOWMALWARESCAN }}" -ne "")
           {
-              $allowMalwareScan = "${{ vars.Offensive360SastApi_AllowMalwareScan }}"
+              $allowMalwareScan = "${{ vars.OFFENSIVE360SASTAPI_ALLOWMALWARESCAN }}"
           }
-          if("${{ vars.Offensive360SastApi_AllowLicenseScan }}" -ne "")
+          if("${{ vars.OFFENSIVE360SASTAPI_ALLOWLICENSESCAN }}" -ne "")
           {
-              $allowLicenseScan = "${{ vars.Offensive360SastApi_AllowLicenseScan }}"
+              $allowLicenseScan = "${{ vars.OFFENSIVE360SASTAPI_ALLOWLICENSESCAN }}"
           }
 
           $projectName = "$buildId"
           $boundary = [System.Guid]::NewGuid().ToString()
 
-          Write-Host "Starting scanning for the project name [$projectName], accessToken [${{ vars.Offensive360SastApi_AccessToken }}], url [${{ vars.OFFENSIVE360SASTAPI_BASEURL }}], buildId [$buildId], filePath [$destinationPath], boundary [$boundary], projectId [$projectId], AllowDependencyScan [$allowDependencyScan], AllowMalwareScan [$allowMalwareScan], AllowLicenseScan [$allowLicenseScan]"
+          Write-Host "Starting scanning for the project name [$projectName], accessToken [${{ vars.OFFENSIVE360SASTAPI_ACCESSTOKEN }}], url [${{ vars.OFFENSIVE360SASTAPI_BASEURL }}], buildId [$buildId], filePath [$destinationPath], boundary [$boundary], projectId [$projectId], AllowDependencyScan [$allowDependencyScan], AllowMalwareScan [$allowMalwareScan], AllowLicenseScan [$allowLicenseScan]"
 
           $fileBytes = [System.IO.File]::ReadAllBytes($destinationPath)
           $fileContent = [System.Text.Encoding]::GetEncoding('iso-8859-1').GetString($fileBytes)
@@ -106,7 +106,7 @@ jobs:
            "--$boundary--$LF"
           ) -join $LF
 
-          $apiResponse = Invoke-RestMethod -Method Post -Uri ("{0}/app/api/externalScan" -f ${{ vars.Offensive360SastApi_BaseUrl }}.TrimEnd('/')) -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer ${{ vars.Offensive360SastApi_AccessToken }}"} -Body $bodyLines
+          $apiResponse = Invoke-RestMethod -Method Post -Uri ("{0}/app/api/externalScan" -f ${{ vars.OFFENSIVE360SASTAPI_BASEURL }}.TrimEnd('/')) -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer ${{ vars.OFFENSIVE360SASTAPI_ACCESSTOKEN }}"} -Body $bodyLines
 
           write-host ("Total Vulnerabilities Count : {0}" -f $apiResponse.vulnerabilities.length)
           write-host ("Total Malwares Count : {0}" -f $apiResponse.malwares.length)
@@ -116,11 +116,11 @@ jobs:
           if (($apiResponse.vulnerabilities.length -gt 0 -or $apiResponse.malwares.length -gt 0 -or $apiResponse.licenses.length -gt 0 -or $apiResponse.dependencyVulnerabilities.length -gt 0) -and "$env:ADO_BreakBuildWhenVulnsFound" -eq 'True') 
           {
            write-host "\n\n**********************************************************************************************************************"
-           write-host ("Offensive 360 vulnerability dashboard : {0}/scan/{1}" -f ${{ vars.Offensive360SastUi_BaseUrl }}.TrimEnd('/'), $apiResponse.projectId)
+           write-host ("Offensive 360 vulnerability dashboard : {0}/scan/{1}" -f ${{ vars.OFFENSIVE360SASTUI_BASEURL }}.TrimEnd('/'), $apiResponse.projectId)
            write-host "**********************************************************************************************************************\n\n"
            throw [System.Exception] "Vulnerabilities found and breaking the build."
           }
-          elseif ($apiResponse.vulnerabilities.length -gt 0 -and "${{ vars.ADO_BreakBuildWhenVulnsFound }} -ne 'True') 
+          elseif ($apiResponse.vulnerabilities.length -gt 0 -and "${{ vars.ADO_BREAKBUILDWHENVULNSFOUND }} -ne 'True') 
           {
               Write-Warning 'Vulnerabilities found and since ADO_BreakBuildWhenVulnsFound is set to false so continuing to build it.'
           }
