@@ -31,4 +31,105 @@ jobs:
               $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("\\\\", "/").Replace("\\", "/"), $relPath);
           }
           $zip.Dispose()
+      - name: Upload Zip
+        shell: pwsh
+        run: |
+          Write-Host "Received scanning request successfully.."
+          $selfUrl = "${env:BUILD_URL}console"
+          $sourcePath = "${{ github.workspace }}"
+          $destinationPath = Split-Path -Path "$sourcePath"
+          $destinationPath += "\\${{ github.event.repository.name }}-${{ github.run_number }}-${{ github.run_attempt }}.zip"
+          Write-Host "$destinationPath"
 
+          $buildId = "${{ github.event.repository.name }}-${{ github.run_number }}-${{ github.run_attempt }}"
+          $allowDependencyScan = $false
+          $allowMalwareScan = $false
+          $allowLicenseScan = $false
+
+          if("$env:Offensive360SastApi_ProjectId" -ne "")
+          {
+              $projectId = "$env:Offensive360SastApi_ProjectId"
+          }
+          if("$env:Offensive360SastApi_AllowDependencyScan" -ne "")
+          {
+              $allowDependencyScan = "$env:Offensive360SastApi_AllowDependencyScan"
+          }
+          if("$env:Offensive360SastApi_AllowMalwareScan" -ne "")
+          {
+              $allowMalwareScan = "$env:Offensive360SastApi_AllowMalwareScan"
+          }
+          if("$env:Offensive360SastApi_AllowLicenseScan" -ne "")
+          {
+              $allowLicenseScan = "$env:Offensive360SastApi_AllowLicenseScan"
+          }
+
+          $projectName = "$buildId"
+          $boundary = [System.Guid]::NewGuid().ToString()
+
+          Write-Host "Starting scanning for the project name [$projectName], accessToken [$env:Offensive360SastApi_AccessToken], url [$env:Offensive360SastApi_BaseUrl], buildId [$buildId], filePath [$destinationPath], boundary [$boundary], projectId [$env:Offensive360SastApi_ProjectId], AllowDependencyScan [$allowDependencyScan], AllowMalwareScan [$allowMalwareScan], AllowLicenseScan [$allowLicenseScan]"
+
+          $fileBytes = [System.IO.File]::ReadAllBytes($destinationPath)
+          $fileContent = [System.Text.Encoding]::GetEncoding('iso-8859-1').GetString($fileBytes)
+
+          $LF = "`r`n"
+          $bodyLines = (
+           "--$boundary",
+           "Content-Disposition: form-data; name=`"name`"$LF",
+           "$projectName",
+           "--$boundary",
+           "Content-Disposition: form-data; name=`"projectId`"$LF",
+           "$projectId",
+           "--$boundary",
+           "Content-Disposition: form-data; name=`"keepInvisibleAndDeletePostScan`"$LF",
+           "false",
+           "--$boundary",
+           "Content-Disposition: form-data; name=`"allowDependencyScan`"$LF",
+           "$allowDependencyScan",
+           "--$boundary",
+           "Content-Disposition: form-data; name=`"allowMalwareScan`"$LF",
+           "$allowMalwareScan",
+           "--$boundary",
+           "Content-Disposition: form-data; name=`"allowLicenseScan`"$LF",
+           "$allowLicenseScan",
+           "--$boundary",
+           "Content-Disposition: form-data; name=`"externalScanSourceType`"$LF",
+           "Github",
+           "--$boundary",
+           "Content-Disposition: form-data; name=`"pipelineUrl`"$LF",
+           "$selfUrl",
+           "--$boundary",
+           "Content-Disposition: form-data; name=`"fileSource`"; filename=`"$projectName.zip`"",
+           "Content-Type: application/x-zip-compressed$LF",
+           $fileContent,
+           "--$boundary--$LF"
+          ) -join $LF
+
+          $apiResponse = Invoke-RestMethod -Method Post -Uri ("{0}/app/api/externalScan" -f $env:Offensive360SastApi_BaseUrl.TrimEnd('/')) -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer $env:Offensive360SastApi_AccessToken"} -Body $bodyLines
+
+          write-host ("Total Vulnerabilities Count : {0}" -f $apiResponse.vulnerabilities.length)
+          write-host ("Total Malwares Count : {0}" -f $apiResponse.malwares.length)
+          write-host ("Total Licenses Count : {0}" -f $apiResponse.licenses.length)
+          write-host ("Total Dependency Vulnerabilities Count : {0}" -f $apiResponse.dependencyVulnerabilities.length)
+
+          if (($apiResponse.vulnerabilities.length -gt 0 -or $apiResponse.malwares.length -gt 0 -or $apiResponse.licenses.length -gt 0 -or $apiResponse.dependencyVulnerabilities.length -gt 0) -and "$env:ADO_BreakBuildWhenVulnsFound" -eq 'True') 
+          {
+           write-host "\n\n**********************************************************************************************************************"
+           write-host ("Offensive 360 vulnerability dashboard : {0}/scan/{1}" -f $env:Offensive360SastUi_BaseUrl.TrimEnd('/'), $apiResponse.projectId)
+           write-host "**********************************************************************************************************************\n\n"
+           throw [System.Exception] "Vulnerabilities found and breaking the build."
+          }
+          elseif ($apiResponse.vulnerabilities.length -gt 0 -and "$env:ADO_BreakBuildWhenVulnsFound" -ne 'True') 
+          {
+              Write-Warning 'Vulnerabilities found and since ADO_BreakBuildWhenVulnsFound is set to false so continuing to build it.'
+          }
+          else
+          {
+              Write-Warning 'No vulnerabilities found and continuing to build it.'
+          }
+
+          Write-Host "Finished SAST file scanning."
+
+          if(Test-Path -Path $destinationPath -PathType Leaf)
+          {
+              Remove-Item $destinationPath
+          }
