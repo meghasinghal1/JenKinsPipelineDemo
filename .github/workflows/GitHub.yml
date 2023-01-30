@@ -15,3 +15,7 @@ jobs:
         run: |
           $sourcePath = "${{ github.workspace }}"
           write-host "$sourcePath"
+          $destinationPath = Split-Path -Path "$sourcePath"
+          $destinationPath += "\\${{ github.event.repository.name }}-${{ github.run_number }}-${{ github.run_attempt }}.zip"
+          Write-Host "$destinationPath"
+
