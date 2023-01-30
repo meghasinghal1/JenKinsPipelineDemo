@@ -8,9 +8,28 @@ jobs:
   zip-repo:
     runs-on: ubuntu-latest
     steps:
-      - uses: montudor/action-zip@v1
-        with:
-          args: zip -qq -r vendor.zip vendor
-      - uses: actions/upload-artifact@v2
-        with:
-          name: vendor.zip
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Printing hello
+        shell: pwsh
+        run: |
+          $sourcePath = "${env:WORKSPACE}"
+          write-host "$sourcePath"
+          $destinationPath = Split-Path -Path "$sourcePath"
+          $destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
+          Write-Host "$destinationPath"
+
+          if(Test-Path -Path $destinationPath -PathType Leaf)
+          {
+              Remove-Item $destinationPath
+          }
+
+          Add-Type -Assembly \'System.IO.Compression.FileSystem\'
+          $zip = [System.IO.Compression.ZipFile]::Open($destinationPath, \'create\')
+          $files = [IO.Directory]::GetFiles($sourcePath, "*" , [IO.SearchOption]::AllDirectories)
+          foreach($file in $files)
+          {
+              $relPath = $file.Substring($sourcePath.Length).TrimStart('\\').TrimStart('/').Replace("\\\\", "/").Replace("\\", "/")
+              $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("\\\\", "/").Replace("\\", "/"), $relPath);
+          }
+          $zip.Dispose()
