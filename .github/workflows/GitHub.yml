@@ -13,7 +13,7 @@ jobs:
       - name: Printing hello
         shell: pwsh
         run: |
-          $sourcePath = "${env:WORKSPACE}"
+          $sourcePath = "${{ github.workspace }}"
           write-host "$sourcePath"
           $destinationPath = Split-Path -Path "$sourcePath"
           $destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
