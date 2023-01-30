@@ -25,7 +25,6 @@ namespace OWASP.WebGoat.NET
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            Password = "123456";
         }
 
         protected void btnGO_Click(object sender, EventArgs e)
