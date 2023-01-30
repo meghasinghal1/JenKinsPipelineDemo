@@ -7,6 +7,8 @@ on:
 jobs:
   sast-scan:
     runs-on: ubuntu-latest
+    environment: 
+      name: Dev
     steps:
       - name: Zip Repo
         shell: pwsh
