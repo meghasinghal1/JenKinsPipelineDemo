@@ -13,7 +13,7 @@ jobs:
       - name: Zip Repo
         shell: pwsh
         run: |
-          $sourcePath = "/home/runner/work/JenKinsPipelineDemo"
+          $sourcePath = "$GITHUB_WORKSPACE"
           write-host "$sourcePath"
           $destinationPath = Split-Path -Path "$sourcePath"
           $destinationPath += "\\${{ github.event.repository.name }}-${{ github.run_number }}-${{ github.run_attempt }}.zip"
@@ -41,7 +41,7 @@ jobs:
         run: |
           Write-Host "Received scanning request successfully.."
           $selfUrl = "${env:BUILD_URL}console"
-          $sourcePath = "/home/runner/work/JenKinsPipelineDemo"
+          $sourcePath = "$GITHUB_WORKSPACE"
           $destinationPath = Split-Path -Path "$sourcePath"
           $destinationPath += "\\${{ github.event.repository.name }}-${{ github.run_number }}-${{ github.run_attempt }}.zip"
           Write-Host "$destinationPath"
