@@ -32,9 +32,7 @@ jobs:
          
           foreach($file in $files)
           {
-              Write-Host "$file";
               $relPath = $file.Substring($sourcePath.Length).TrimStart('\\').TrimStart('/').Replace("\\\\", "/").Replace("\\", "/")
-              Write-Host "$relPath";
               $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("\\\\", "/").Replace("\\", "/"), $relPath);
           }
           $zip.Dispose()
@@ -77,7 +75,7 @@ jobs:
 
           $fileBytes = [System.IO.File]::ReadAllBytes($destinationPath)
           $fileContent = [System.Text.Encoding]::GetEncoding('iso-8859-1').GetString($fileBytes)
-          Write-Host $fileContent
+          
           $LF = "`r`n"
           $bodyLines = (
            "--$boundary",
