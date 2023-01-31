@@ -120,7 +120,7 @@ jobs:
            write-host "**********************************************************************************************************************\n\n"
            throw [System.Exception] "Vulnerabilities found and breaking the build."
           }
-          elseif ($apiResponse.vulnerabilities.length -gt 0 -and "${{ vars.ADO_BREAKBUILDWHENVULNSFOUND }} -ne 'True') 
+          elseif ($apiResponse.vulnerabilities.length -gt 0 -and "${{ vars.ADO_BREAKBUILDWHENVULNSFOUND }}" -ne 'True') 
           {
               Write-Warning 'Vulnerabilities found and since ADO_BreakBuildWhenVulnsFound is set to false so continuing to build it.'
           }
