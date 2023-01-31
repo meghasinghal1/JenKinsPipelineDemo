@@ -129,7 +129,7 @@ jobs:
               Write-Warning 'No vulnerabilities found and continuing to build it.'
           }
 
-          Write-Host "Completed SAST file scanning."
+          #Write-Host "Completed SAST file scanning."
 
           if(Test-Path -Path $destinationPath -PathType Leaf)
           {
