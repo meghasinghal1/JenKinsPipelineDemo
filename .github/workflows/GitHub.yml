@@ -116,16 +116,16 @@ jobs:
           write-host ("Total Licenses Count : {0}" -f $apiResponse.licenses.length)
           write-host ("Total Dependency Vulnerabilities Count : {0}" -f $apiResponse.dependencyVulnerabilities.length)
 
-          if (($apiResponse.vulnerabilities.length -gt 0 -or $apiResponse.malwares.length -gt 0 -or $apiResponse.licenses.length -gt 0 -or $apiResponse.dependencyVulnerabilities.length -gt 0) -and "${{ vars.ADO_BREAKBUILDWHENVULNSFOUND }}" -eq 'True') 
+          if (($apiResponse.vulnerabilities.length -gt 0 -or $apiResponse.malwares.length -gt 0 -or $apiResponse.licenses.length -gt 0 -or $apiResponse.dependencyVulnerabilities.length -gt 0) -and "${{ vars.PIPELINE_BREAKBUILDWHENVULNSFOUND }}" -eq 'True') 
           {
            write-host "\n\n**********************************************************************************************************************"
            write-host ("Offensive 360 vulnerability dashboard : {0}/scan/{1}" -f "${{ vars.OFFENSIVE360SASTUI_BASEURL }}".TrimEnd('/'), $apiResponse.projectId)
            write-host "**********************************************************************************************************************\n\n"
            throw [System.Exception] "Vulnerabilities found and breaking the build."
           }
-          elseif ($apiResponse.vulnerabilities.length -gt 0 -and "${{ vars.ADO_BREAKBUILDWHENVULNSFOUND }}" -ne 'True') 
+          elseif ($apiResponse.vulnerabilities.length -gt 0 -and "${{ vars.PIPELINE_BREAKBUILDWHENVULNSFOUND }}" -ne 'True') 
           {
-              Write-Warning 'Vulnerabilities found and since ADO_BreakBuildWhenVulnsFound is set to false so continuing to build it.'
+              Write-Warning 'Vulnerabilities found and since PIPELINE_BREAKBUILDWHENVULNSFOUND is set to false so continuing to build it.'
           }
           else
           {
