@@ -98,7 +98,7 @@ jobs:
            "$allowLicenseScan",
            "--$boundary",
            "Content-Disposition: form-data; name=`"externalScanSourceType`"$LF",
-           "Github",
+           "GitHub",
            "--$boundary",
            "Content-Disposition: form-data; name=`"pipelineUrl`"$LF",
            "$selfUrl",
