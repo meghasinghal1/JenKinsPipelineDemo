@@ -40,7 +40,7 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "Received scanning request successfully.."
-          $selfUrl = "${env:BUILD_URL}console"
+          $selfUrl = "https://github.com/${{github.repository}}/commit/${{github.sha}}/checks/${{github.run_id}}"
           $sourcePath = "${{ github.workspace }}"
           $destinationPath = Split-Path -Path "$sourcePath"
           $destinationPath += "\\${{ github.event.repository.name }}-${{ github.run_number }}-${{ github.run_attempt }}.zip"
