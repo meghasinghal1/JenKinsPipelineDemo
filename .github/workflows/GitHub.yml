@@ -68,7 +68,7 @@ jobs:
           $projectName = "$buildId"
           $boundary = [System.Guid]::NewGuid().ToString()
 
-          Write-Host "Starting scanning for the project name [$projectName], accessToken [${{ vars.OFFENSIVE360SASTAPI_ACCESSTOKEN }}], url [${{ vars.OFFENSIVE360SASTAPI_BASEURL }}], buildId [$buildId], filePath [$destinationPath], boundary [$boundary], projectId [$projectId], AllowDependencyScan [$allowDependencyScan], AllowMalwareScan [$allowMalwareScan], AllowLicenseScan [$allowLicenseScan]"
+          Write-Host "Starting scanning for the project name [$projectName], accessToken [${{ secrets.OFFENSIVE360SASTAPI_ACCESSTOKEN }}], url [${{ vars.OFFENSIVE360SASTAPI_BASEURL }}], buildId [$buildId], filePath [$destinationPath], boundary [$boundary], projectId [$projectId], AllowDependencyScan [$allowDependencyScan], AllowMalwareScan [$allowMalwareScan], AllowLicenseScan [$allowLicenseScan]"
 
           $fileBytes = [System.IO.File]::ReadAllBytes($destinationPath)
           $fileContent = [System.Text.Encoding]::GetEncoding('iso-8859-1').GetString($fileBytes)
@@ -106,7 +106,7 @@ jobs:
            "--$boundary--$LF"
           ) -join $LF
 
-          $apiResponse = Invoke-RestMethod -Method Post -Uri ("{0}/app/api/externalScan" -f ${{ vars.OFFENSIVE360SASTAPI_BASEURL }}.TrimEnd('/')) -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer ${{ vars.OFFENSIVE360SASTAPI_ACCESSTOKEN }}"} -Body $bodyLines
+          $apiResponse = Invoke-RestMethod -Method Post -Uri ("{0}/app/api/externalScan" -f ${{ secrets.OFFENSIVE360SASTAPI_BASEURL }}.TrimEnd('/')) -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer ${{ vars.OFFENSIVE360SASTAPI_ACCESSTOKEN }}"} -Body $bodyLines
 
           write-host ("Total Vulnerabilities Count : {0}" -f $apiResponse.vulnerabilities.length)
           write-host ("Total Malwares Count : {0}" -f $apiResponse.malwares.length)
