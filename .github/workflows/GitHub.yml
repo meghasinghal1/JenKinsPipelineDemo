@@ -30,8 +30,9 @@ jobs:
          
           foreach($file in $files)
           {
-              write-host "$file";
+              Write-Host "$file";
               $relPath = $file.Substring($sourcePath.Length).TrimStart('\\').TrimStart('/').Replace("\\\\", "/").Replace("\\", "/")
+              Write-Host "$relPath";
               $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("\\\\", "/").Replace("\\", "/"), $relPath);
           }
           $zip.Dispose()
