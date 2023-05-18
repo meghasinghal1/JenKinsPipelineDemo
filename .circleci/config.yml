@@ -1,15 +1,23 @@
-
 version: 2.1
 
-orbs:
-  win: circleci/windows@5.0
+executors:
+  powershell-executor:
+    docker:
+      - image: mcr.microsoft.com/powershell:lts
 
 jobs:
   build:
-    executor: win/default
+    executor: powershell-executor
     steps:
       - checkout
-      - run: dotnet tool install --global PowerShell
-      - run: pwsh '''
-                write-host "hellooooooooooo tets"
-            '''
+
+      - run:
+          name: Run PowerShell script
+          command: |
+            write-host 'hello test'
+
+workflows:
+  version: 2
+  build_workflow:
+    jobs:
+      - build
