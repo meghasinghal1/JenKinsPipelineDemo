@@ -10,7 +10,7 @@ jobs:
     steps:
       - checkout
       - run: dotnet tool install --global PowerShell
-      - run: pwsh pwsh '''
-					write-host "hellooooooooooo tets"
-				'''
+      - run: pwsh '''
+		write-host "hellooooooooooo tets"
+	     ''
 
