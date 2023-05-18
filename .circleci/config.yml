@@ -11,6 +11,6 @@ jobs:
       - checkout
       - run: dotnet tool install --global PowerShell
       - run: pwsh '''
-		write-host "hellooooooooooo tets"
-	     ''
+write-host "hellooooooooooo tets"
+	     '''
 
