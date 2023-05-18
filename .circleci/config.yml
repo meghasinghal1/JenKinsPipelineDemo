@@ -14,7 +14,10 @@ jobs:
       - run:
           name: Run PowerShell script
           command: |
-            pwsh -Command "Write-Host 'hello test command'"
+            pwsh -Command '
+                $sourcePath = "${env:CIRCLE_WORKING_DIRECTORY}"
+				write-host "$sourcePath"
+            '
 
 workflows:
   version: 2
