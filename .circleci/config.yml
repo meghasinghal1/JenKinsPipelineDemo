@@ -1,18 +1,16 @@
 
 version: 2.1
+
+orbs:
+  win: circleci/windows@5.0
+
 jobs:
-  build: # name of your job
-    machine:
-      image: windows-server-2019-vs2019:current # Windows machine image
-    resource_class: windows.medium
+  build:
+    executor: win/default
     steps:
-      # default shell is Powershell
-      - run:
-         command: $(echo hello | Out-Host; $?) -and $(echo world | Out-Host; $?)
-         shell: powershell.exe
-      - run:
-         command: echo hello && echo world
-         shell: bash.exe
-      - run:
-         command: echo hello & echo world
-         shell: cmd.exe
+      - checkout
+      - run: dotnet tool install --global PowerShell
+      - run: pwsh pwsh '''
+					write-host "hellooooooooooo tets"
+				'''
+
