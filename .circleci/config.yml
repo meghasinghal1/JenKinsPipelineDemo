@@ -14,7 +14,7 @@ jobs:
       - run:
           name: Run PowerShell script
           command: |
-            write-host 'hello test'
+            Write-Host 'hello test command'
 
 workflows:
   version: 2
