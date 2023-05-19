@@ -35,6 +35,15 @@ jobs:
                   $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("\\\\", "/").Replace("\\", "/"), $relPath)
               }
               $zip.Dispose()
+
+              if(Test-Path -Path $destinationPath -PathType Leaf)
+              {
+                  write-host 'file found'
+              }
+              else
+              {
+                  write-host 'file not found'
+              }
             '
 
 workflows:
