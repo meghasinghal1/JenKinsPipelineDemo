@@ -17,8 +17,8 @@ jobs:
             pwsh -Command '
               $sourcePath = "/root/project"
               Write-Host "sourcePath=$sourcePath"
-              $destinationPath = $sourcePath #Split-Path -Path "$sourcePath"
-              $destinationPath += "\\${env:CIRCLE_JOB}-${env:CIRCLE_BUILD_NUM}.zip"
+              $destinationPath = Split-Path -Path "$sourcePath"
+              $destinationPath += "/${env:CIRCLE_JOB}-${env:CIRCLE_BUILD_NUM}.zip"
               Write-Host "destinationPath=$destinationPath"
 
               if(Test-Path -Path $destinationPath -PathType Leaf)
