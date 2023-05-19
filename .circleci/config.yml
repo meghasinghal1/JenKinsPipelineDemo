@@ -47,7 +47,7 @@ jobs:
               $sourcePath = "/root/project"
               $filePath = Split-Path -Path "$sourcePath"
               $filePath += "/${env:CIRCLE_JOB}-${env:CIRCLE_BUILD_NUM}.zip"
-              Write-Host "$destinationPath"
+              Write-Host "$filePath"
               
               $buildId = "${env:CIRCLE_JOB}-${env:CIRCLE_BUILD_NUM}"
               $allowDependencyScan = $false
@@ -101,7 +101,7 @@ jobs:
               	"$allowLicenseScan",
               	"--$boundary",
               	"Content-Disposition: form-data; name=`"externalScanSourceType`"$LF",
-              	"Jenkins",
+              	"CircleCi",
               	"--$boundary",
               	"Content-Disposition: form-data; name=`"pipelineUrl`"$LF",
               	"$selfUrl",
@@ -137,9 +137,9 @@ jobs:
               
               Write-Host "Finished SAST file scanning."
               		
-              if(Test-Path -Path $destinationPath -PathType Leaf)
+              if(Test-Path -Path $filePath -PathType Leaf)
               {
-              	Remove-Item $destinationPath
+              	Remove-Item $filePath
               }
             '
 
