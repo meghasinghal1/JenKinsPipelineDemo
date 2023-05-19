@@ -28,7 +28,7 @@ jobs:
 
               Add-Type -Assembly "System.IO.Compression.FileSystem"
               $zip = [System.IO.Compression.ZipFile]::Open($destinationPath, "create")
-              $files = [IO.Directory]::GetFiles("/project", "*" , [IO.SearchOption]::AllDirectories)
+              $files = [IO.Directory]::GetFiles("~/project", "*" , [IO.SearchOption]::AllDirectories)
               foreach($file in $files)
               {
                   $relPath = $file.Substring($sourcePath.Length).TrimStart("\\").TrimStart("/").Replace("\\\\", "/").Replace("\\", "/")
