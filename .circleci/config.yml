@@ -15,7 +15,7 @@ jobs:
           name: zipRepo
           command: |
             pwsh -Command '
-              $sourcePath = "${env:CIRCLE_WORKING_DIRECTORY}"
+              $sourcePath = "/root/project"
               Write-Host "sourcePath=$sourcePath"
               $destinationPath = Split-Path -Path "$sourcePath"
               $destinationPath += "\\${env:CIRCLE_JOB}-${env:CIRCLE_BUILD_NUM}.zip"
@@ -28,7 +28,7 @@ jobs:
 
               Add-Type -Assembly "System.IO.Compression.FileSystem"
               $zip = [System.IO.Compression.ZipFile]::Open($destinationPath, "create")
-              $files = [IO.Directory]::GetFiles("/root/project", "*" , [IO.SearchOption]::AllDirectories)
+              $files = [IO.Directory]::GetFiles($sourcePath, "*" , [IO.SearchOption]::AllDirectories)
               foreach($file in $files)
               {
                   $relPath = $file.Substring($sourcePath.Length).TrimStart("\\").TrimStart("/").Replace("\\\\", "/").Replace("\\", "/")
