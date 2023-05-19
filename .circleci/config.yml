@@ -51,7 +51,7 @@ jobs:
           command: |
             pwsh -Command '
               Write-Host "Received scanning request successfully.."
-					
+
               $selfUrl = "${env:CIRCLE_BUILD_URL}"
               $sourcePath = "/root/project"
               $filePath = Split-Path -Path "$sourcePath"
