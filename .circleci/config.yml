@@ -15,8 +15,8 @@ jobs:
           name: Run PowerShell script
           command: |
             pwsh -Command '
-                $sourcePath = "${env:CIRCLE_WORKING_DIRECTORY}"
-write-host "$sourcePath"
+              $sourcePath = "${env:CIRCLE_WORKING_DIRECTORY}"
+              Write-Host "$sourcePath"
             '
 
 workflows:
