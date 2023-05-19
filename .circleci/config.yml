@@ -39,6 +39,10 @@ jobs:
               if(Test-Path -Path $sourcePath -PathType Any)
               {
                   write-host 'folder path found'
+                  $files = Get-ChildItem -Path $sourcePath
+                  foreach ($file in $files) {
+                    Write-Host "File: $($file.Name)"
+                  }
               }
               else
               {
