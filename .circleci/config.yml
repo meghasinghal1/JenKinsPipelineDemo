@@ -31,6 +31,7 @@ jobs:
               $files = [IO.Directory]::GetFiles($sourcePath, "*" , [IO.SearchOption]::AllDirectories)
               foreach($file in $files)
               {
+                  write-host "$file"
                   $relPath = $file.Substring($sourcePath.Length).TrimStart("\\").TrimStart("/").Replace("\\\\", "/").Replace("\\", "/")
                   $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("\\\\", "/").Replace("\\", "/"), $relPath)
               }
