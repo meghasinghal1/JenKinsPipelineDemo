@@ -16,7 +16,7 @@ jobs:
           command: |
             pwsh -Command '
                 $sourcePath = "${env:CIRCLE_WORKING_DIRECTORY}"
-				write-host "$sourcePath"
+		write-host "$sourcePath"
             '
 
 workflows:
