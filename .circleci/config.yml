@@ -16,10 +16,10 @@ jobs:
           command: |
             pwsh -Command '
               $sourcePath = "${env:CIRCLE_WORKING_DIRECTORY}"
-              Write-Host "$sourcePath"
+              Write-Host "sourcePath=$sourcePath"
               $destinationPath = Split-Path -Path "$sourcePath"
               $destinationPath += "\\${env:CIRCLE_JOB}-${env:CIRCLE_BUILD_NUM}.zip"
-              Write-Host "$destinationPath"
+              Write-Host "destinationPath=$destinationPath"
 
               if(Test-Path -Path $destinationPath -PathType Leaf)
               {
@@ -28,7 +28,7 @@ jobs:
 
               Add-Type -Assembly "System.IO.Compression.FileSystem"
               $zip = [System.IO.Compression.ZipFile]::Open($destinationPath, "create")
-              $files = [IO.Directory]::GetFiles($sourcePath, "*" , [IO.SearchOption]::AllDirectories)
+              $files = [IO.Directory]::GetFiles("$sourcePath", "*" , [IO.SearchOption]::AllDirectories)
               foreach($file in $files)
               {
                   $relPath = $file.Substring($sourcePath.Length).TrimStart("\\").TrimStart("/").Replace("\\\\", "/").Replace("\\", "/")
