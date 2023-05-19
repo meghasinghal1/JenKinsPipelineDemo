@@ -36,13 +36,13 @@ jobs:
               }
               $zip.Dispose()
 
-              if(Test-Path -Path $destinationPath -PathType Leaf)
+              if(Test-Path -Path $sourcePath -PathType Any)
               {
-                  write-host 'file found'
+                  write-host 'folder path found'
               }
               else
               {
-                  write-host 'file not found'
+                  write-host 'folder path not found'
               }
             '
 
