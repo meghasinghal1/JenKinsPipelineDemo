@@ -123,7 +123,7 @@ jobs:
               {
               	write-host "\n\n**********************************************************************************************************************"
                 
-                $env:Offensive360SastUi_BaseUrl.TrimEnd("/") | Out-File Offensive360SastUi_BaseUrl_Value_Temp.txt
+                ("test_{0}" -f $env:Offensive360SastUi_BaseUrl.TrimEnd("/")) | Out-File Offensive360SastUi_BaseUrl_Value_Temp.txt
                 $offensive360SastUi_BaseUrl_Value = Get-Content Offensive360SastUi_BaseUrl_Value_Temp.txt
                 Remove-Item Offensive360SastUi_BaseUrl_Value_Temp.txt
 
