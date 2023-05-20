@@ -13,7 +13,7 @@ jobs:
 
       - run:
           name: test env variable
-          command: echo $env:Offensive360SastUi_BaseUrl
+          command: echo ${env:Offensive360SastUi_BaseUrl}
 
       - run:
           name: zipRepo
