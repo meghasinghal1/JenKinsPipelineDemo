@@ -15,12 +15,7 @@ jobs:
           name: Print Environment Variable
           command: |
             pwsh -Command '
-              $envVarValue = $args[0]
-              Write-Output "Pipeline_BreakBuildWhenVulnsFound: $envVarValue"
-            '
-            arguments:
-              - $Pipeline_BreakBuildWhenVulnsFound
-          no_output_timeout: 10m
+              Write-Output "$Pipeline_BreakBuildWhenVulnsFound"
 
 workflows:
   version: 2
