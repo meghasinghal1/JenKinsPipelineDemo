@@ -12,6 +12,10 @@ jobs:
       - checkout
 
       - run:
+          name: test env variable
+          command: echo $env:Offensive360SastUi_BaseUrl
+
+      - run:
           name: zipRepo
           command: |
             pwsh -Command '
