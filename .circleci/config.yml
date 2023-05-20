@@ -12,10 +12,27 @@ jobs:
       - checkout
 
       - run:
-          name: Print Environment Variable
+          name: zipRepo
           command: |
             pwsh -Command '
-              Write-Output "$Pipeline_BreakBuildWhenVulnsFound"
+              Write-Host "${env:CIRCLE_JOB}"
+              Write-Host "${env:Offensive360SastUi_BaseUrl}"
+              
+              Write-Output "${env:CIRCLE_JOB}"
+              Write-Output "${env:Offensive360SastUi_BaseUrl}"
+              
+              echo "${env:CIRCLE_JOB}"
+              echo "${env:Offensive360SastUi_BaseUrl}"
+              
+              Write-Host "$env:CIRCLE_JOB"
+              Write-Host "$env:Offensive360SastUi_BaseUrl"
+              
+              Write-Output "$env:CIRCLE_JOB"
+              Write-Output "$env:Offensive360SastUi_BaseUrl"
+              
+              echo "$env:CIRCLE_JOB"
+              echo "$env:Offensive360SastUi_BaseUrl"
+            '
 
 workflows:
   version: 2
