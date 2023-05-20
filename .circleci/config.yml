@@ -15,23 +15,23 @@ jobs:
           name: zipRepo
           command: |
             pwsh -Command '
-              Write-Host "${env:CIRCLE_JOB}"
-              Write-Host "${env:Offensive360SastUi_BaseUrl}"
+              Write-Host "sourcePath=${env:CIRCLE_JOB}"
+              Write-Host "sourcePath=${env:Offensive360SastUi_BaseUrl}"
               
-              Write-Output "${env:CIRCLE_JOB}"
-              Write-Output "${env:Offensive360SastUi_BaseUrl}"
+              Write-Output "sourcePath=${env:CIRCLE_JOB}"
+              Write-Output "sourcePath=${env:Offensive360SastUi_BaseUrl}"
               
-              echo "${env:CIRCLE_JOB}"
-              echo "${env:Offensive360SastUi_BaseUrl}"
+              echo "sourcePath=${env:CIRCLE_JOB}"
+              echo "sourcePath=${env:Offensive360SastUi_BaseUrl}"
               
-              Write-Host "$env:CIRCLE_JOB"
-              Write-Host "$env:Offensive360SastUi_BaseUrl"
+              Write-Host "sourcePath=$env:CIRCLE_JOB"
+              Write-Host "sourcePath=$env:Offensive360SastUi_BaseUrl"
               
-              Write-Output "$env:CIRCLE_JOB"
-              Write-Output "$env:Offensive360SastUi_BaseUrl"
+              Write-Output "sourcePath=$env:CIRCLE_JOB"
+              Write-Output "sourcePath=$env:Offensive360SastUi_BaseUrl"
               
-              echo "$env:CIRCLE_JOB"
-              echo "$env:Offensive360SastUi_BaseUrl"
+              echo "sourcePath=$env:CIRCLE_JOB"
+              echo "sourcePath=$env:Offensive360SastUi_BaseUrl"
             '
 
 workflows:
