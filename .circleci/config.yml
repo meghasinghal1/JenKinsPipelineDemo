@@ -111,22 +111,8 @@ jobs:
               	$fileContent,
               	"--$boundary--$LF"
               ) -join $LF
-
-              write-host "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-              $obj = @{}
-              $obj.Test = "xx=${env:Offensive360SastUi_BaseUrl}"
-              $obj.Test1 = "${env:Offensive360SastUi_BaseUrl}"
-              $jsonString = $obj | ConvertTo-Json
-              $jsonString
-              write-host "${env:Offensive360SastUi_BaseUrl}"
-              write-host "${Offensive360SastUi_BaseUrl}"
-              write-host "xx=${env:Offensive360SastUi_BaseUrl}"
-              write-host "xx=${Offensive360SastUi_BaseUrl}"
-              write-host "json=$jsonString"
-              write-host "json1=${jsonString}"
-              write-host "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
               
-              #$apiResponse = Invoke-RestMethod -Method Post -Uri ("{0}/app/api/externalScan" -f $env:Offensive360SastApi_BaseUrl.TrimEnd("/")) -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer $env:Offensive360SastApi_AccessToken"} -Body $bodyLines
+              $apiResponse = Invoke-RestMethod -Method Post -Uri ("{0}/app/api/externalScan" -f $env:Offensive360SastApi_BaseUrl.TrimEnd("/")) -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer $env:Offensive360SastApi_AccessToken"} -Body $bodyLines
               
               write-host ("Total Vulnerabilities Count : {0}" -f $apiResponse.vulnerabilities.length)
               write-host ("Total Malwares Count : {0}" -f $apiResponse.malwares.length)
@@ -135,14 +121,6 @@ jobs:
               
               if (($apiResponse.vulnerabilities.length -gt 0 -or $apiResponse.malwares.length -gt 0 -or $apiResponse.licenses.length -gt 0 -or $apiResponse.dependencyVulnerabilities.length -gt 0) -and "$env:Pipeline_BreakBuildWhenVulnsFound" -eq "True") 
               {
-              	write-host "\n\n**********************************************************************************************************************"
-                
-                ("test_{0}" -f $env:Offensive360SastUi_BaseUrl.TrimEnd("/")) | Out-File Offensive360SastUi_BaseUrl_Value_Temp.txt
-                $offensive360SastUi_BaseUrl_Value = Get-Content Offensive360SastUi_BaseUrl_Value_Temp.txt
-                Remove-Item Offensive360SastUi_BaseUrl_Value_Temp.txt
-
-                write-host ("Offensive 360 vulnerability dashboard : {0}/scan/{1}" -f $offensive360SastUi_BaseUrl_Value, $apiResponse.projectId)
-              	write-host "**********************************************************************************************************************\n\n"
               	throw [System.Exception] "Vulnerabilities found and breaking the build."
               }
               elseif ($apiResponse.vulnerabilities.length -gt 0 -and "$env:Pipeline_BreakBuildWhenVulnsFound" -ne "True") 
