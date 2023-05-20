@@ -112,8 +112,12 @@ jobs:
               	"--$boundary--$LF"
               ) -join $LF
 
+              write-host "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
               write-host "${env:Offensive360SastUi_BaseUrl}"
               write-host "${Offensive360SastUi_BaseUrl}"
+              write-host "xx=${env:Offensive360SastUi_BaseUrl}"
+              write-host "xx=${Offensive360SastUi_BaseUrl}"
+              write-host "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
               
               #$apiResponse = Invoke-RestMethod -Method Post -Uri ("{0}/app/api/externalScan" -f $env:Offensive360SastApi_BaseUrl.TrimEnd("/")) -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer $env:Offensive360SastApi_AccessToken"} -Body $bodyLines
               
