@@ -114,7 +114,8 @@ jobs:
 
               write-host "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
               $obj = @{}
-              $obj.Test = "test"
+              $obj.Test = "xx=${env:Offensive360SastUi_BaseUrl}"
+              $obj.Test1 = "${env:Offensive360SastUi_BaseUrl}"
               $jsonString = $obj | ConvertTo-Json
               $jsonString
               write-host "${env:Offensive360SastUi_BaseUrl}"
