@@ -15,7 +15,7 @@ jobs:
           name: Get Custom Environment Variable
           command: |
             pwsh -Command '
-              $customVar = $env:CUSTOM_VARIABLE
+              $customVar = $env:Offensive360SastUi_BaseUrl
               Write-Output "Custom Variable: $customVar"
             '
           environment:
