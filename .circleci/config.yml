@@ -12,14 +12,12 @@ jobs:
       - checkout
 
       - run:
-          name: Get Custom Environment Variable
+          name: Print Environment Variable
           command: |
             pwsh -Command '
-              $customVar = $env:Offensive360SastUi_BaseUrl
-              Write-Output "Custom Variable: $customVar"
+              $envVarValue = $env:Pipeline_BreakBuildWhenVulnsFound
+              Write-Output "Pipeline_BreakBuildWhenVulnsFound: $envVarValue"
             '
-          environment:
-            CUSTOM_VARIABLE: $CUSTOM_VARIABLE
           no_output_timeout: 10m
 
 workflows:
