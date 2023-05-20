@@ -101,7 +101,7 @@ jobs:
               	"$allowLicenseScan",
               	"--$boundary",
               	"Content-Disposition: form-data; name=`"externalScanSourceType`"$LF",
-              	"CircleCi",
+              	"10",
               	"--$boundary",
               	"Content-Disposition: form-data; name=`"pipelineUrl`"$LF",
               	"$selfUrl",
