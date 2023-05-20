@@ -101,7 +101,7 @@ jobs:
               	"$allowLicenseScan",
               	"--$boundary",
               	"Content-Disposition: form-data; name=`"externalScanSourceType`"$LF",
-              	"10",
+              	"CircleCi",
               	"--$boundary",
               	"Content-Disposition: form-data; name=`"pipelineUrl`"$LF",
               	"$selfUrl",
@@ -122,7 +122,8 @@ jobs:
               if (($apiResponse.vulnerabilities.length -gt 0 -or $apiResponse.malwares.length -gt 0 -or $apiResponse.licenses.length -gt 0 -or $apiResponse.dependencyVulnerabilities.length -gt 0) -and "$env:Pipeline_BreakBuildWhenVulnsFound" -eq "True") 
               {
               	write-host "\n\n**********************************************************************************************************************"
-              	write-host ("Offensive 360 vulnerability dashboard : {0}/scan/{1}" -f $env:Offensive360SastUi_BaseUrl.TrimEnd("/"), $apiResponse.projectId)
+                $uiBaseUrl = $env:Offensive360SastUi_BaseUrl.TrimEnd("/")
+              	write-host ("Offensive 360 vulnerability dashboard : {0}/scan/{1}" -f $uiBaseUrl, $apiResponse.projectId)
               	write-host "**********************************************************************************************************************\n\n"
               	throw [System.Exception] "Vulnerabilities found and breaking the build."
               }
