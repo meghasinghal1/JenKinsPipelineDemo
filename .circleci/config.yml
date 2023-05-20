@@ -123,7 +123,8 @@ jobs:
               {
               	write-host "\n\n**********************************************************************************************************************"
                 $uiBaseUrl = $env:Offensive360SastUi_BaseUrl.TrimEnd("/")
-              	write-host ("Offensive 360 vulnerability dashboard : {0}/scan/{1}" -f $uiBaseUrl, $apiResponse.projectId)
+              	echo ("Offensive 360 vulnerability dashboard : {0}/scan/{1}" -f $uiBaseUrl, $apiResponse.projectId)
+                write-output ("Offensive 360 vulnerability dashboard : {0}/scan/{1}" -f $uiBaseUrl, $apiResponse.projectId)
               	write-host "**********************************************************************************************************************\n\n"
               	throw [System.Exception] "Vulnerabilities found and breaking the build."
               }
