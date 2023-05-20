@@ -113,10 +113,16 @@ jobs:
               ) -join $LF
 
               write-host "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+              $obj = @{}
+              $obj.Test = "test"
+              $jsonString = $obj | ConvertTo-Json
+              $jsonString
               write-host "${env:Offensive360SastUi_BaseUrl}"
               write-host "${Offensive360SastUi_BaseUrl}"
               write-host "xx=${env:Offensive360SastUi_BaseUrl}"
               write-host "xx=${Offensive360SastUi_BaseUrl}"
+              write-host "json=$jsonString"
+              write-host "json1=${jsonString}"
               write-host "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
               
               #$apiResponse = Invoke-RestMethod -Method Post -Uri ("{0}/app/api/externalScan" -f $env:Offensive360SastApi_BaseUrl.TrimEnd("/")) -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer $env:Offensive360SastApi_AccessToken"} -Body $bodyLines
