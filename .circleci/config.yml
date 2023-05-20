@@ -1,28 +1,27 @@
 version: 2.1
 
-executors:
-  powershell-executor:
-    docker:
-      - image: mcr.microsoft.com/powershell:lts
-
 jobs:
   build:
-    executor: powershell-executor
+    docker:
+      - image: circleci/node:14
+
     steps:
       - checkout
 
       - run:
-          name: zipRepo
+          name: Print Secret Value
+          command: echo "Secret Value: $SECRET_VALUE"
           environment:
-            Offensive360SastUi_BaseUrl: $env:Offensive360SastUi_BaseUrl
+            SECRET_VALUE: $SECRET_VALUE
+          no_output_timeout: 10m
+
+      - run:
+          name: Print Unmasked Secret Value
+          command: echo "Unmasked Secret Value: $SECRET_VALUE"
+          environment:
+            SECRET_VALUE: $SECRET_VALUE
             CIRCLE_UNMASK: true
-          command: |
-            pwsh -Command '
-              Write-Host "sourcePath=${env:CIRCLE_JOB}"
-              Write-Host "sourcePath=${env:Offensive360SastUi_BaseUrl}"
-              Write-Host "sourcePath=${Offensive360SastUi_BaseUrl}"
-              Write-Host "sourcePath=$Offensive360SastUi_BaseUrl"
-            '
+          no_output_timeout: 10m
 
 workflows:
   version: 2
