@@ -43,6 +43,7 @@ jobs:
             pwsh -Command '
               Write-Host "Received scanning request successfully.."
 
+              $offensive360SastUi_BaseUrl = "https://demo1922.offensive360.com"
               $selfUrl = "${env:CIRCLE_BUILD_URL}"
               $sourcePath = "/root/project"
               $filePath = Split-Path -Path "$sourcePath"
@@ -121,6 +122,9 @@ jobs:
               
               if (($apiResponse.vulnerabilities.length -gt 0 -or $apiResponse.malwares.length -gt 0 -or $apiResponse.licenses.length -gt 0 -or $apiResponse.dependencyVulnerabilities.length -gt 0) -and "$env:Pipeline_BreakBuildWhenVulnsFound" -eq "True") 
               {
+              	write-host "\n\n**********************************************************************************************************************"
+              	write-host ("Offensive 360 vulnerability dashboard : {0}/scan/{1}" -f $offensive360SastUi_BaseUrl.TrimEnd("/"), $apiResponse.projectId)
+              	write-host "**********************************************************************************************************************\n\n"
               	throw [System.Exception] "Vulnerabilities found and breaking the build."
               }
               elseif ($apiResponse.vulnerabilities.length -gt 0 -and "$env:Pipeline_BreakBuildWhenVulnsFound" -ne "True") 
