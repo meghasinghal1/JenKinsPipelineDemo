@@ -1,25 +1,49 @@
 pipeline {
     agent any
 
+    // Define a reusable function to run PowerShell commands
     stages {
-        stage('zipRepo') {
+        stage('Common Function') {
             steps {
                 script {
-                    // Define a reusable function to run PowerShell commands
+                    // Define the reusable function
+                    // Using a global variable to store the function
                     def runPowerShell = { command ->
                         try {
                             // Attempt to use PowerShell Core (pwsh)
                             pwsh command
                         } catch (Exception e) {
                             // If pwsh fails, use Windows PowerShell
-                            echo "\u001B[33mFailed to run pwsh: ${e.message}, falling back to Windows PowerShell.\u001B[0m"
+                            echo "Failed to run pwsh: ${e.message}, falling back to Windows PowerShell."
                             powershell command
                         }
                     }
 
-                    // Call the function with the desired command
-                    runPowerShell '''
+                    // Store the function in a variable accessible by the pipeline
+                    env.runPowerShell = runPowerShell
+                }
+            }
+        }
+    }
+
+    stages {
+        stage('zipRepo') {
+            steps {
+                script {
+                    // Call the common function with the desired command
+                    env.runPowerShell '''
                         Write-Output "Zipping completed successfully!" | Out-Host
+                    '''
+                }
+            }
+        }
+
+        stage('uploadZip') {
+            steps {
+                script {
+                    // Call the common function with the desired command
+                    env.runPowerShell '''
+                        Write-Output "Uploading completed successfully!" | Out-Host
                     '''
                 }
             }
