@@ -5,7 +5,7 @@ pipeline {
         stage('zipRepo') {
     steps {
         pwsh '''
-            Write-Host "Zipping completed successfully!"
+            Write-Output "Zipping completed successfully!"
         '''
     }
 }
