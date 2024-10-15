@@ -5,30 +5,7 @@ pipeline {
         stage('zipRepo') {
     steps {
         pwsh '''
-            try {
-                $sourcePath = "${env:WORKSPACE}"
-                Write-Host "Source Path: $sourcePath"
-                
-                $destinationPath = Join-Path -Path (Split-Path -Path "$sourcePath") -ChildPath "${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
-                Write-Host "Destination Path: $destinationPath"
-                
-                if (Test-Path -Path $destinationPath -PathType Leaf) {
-                    Remove-Item $destinationPath -Force
-                }
-                
-                Add-Type -Assembly 'System.IO.Compression.FileSystem'
-                $zip = [System.IO.Compression.ZipFile]::Open($destinationPath, 'create')
-                $files = [IO.Directory]::GetFiles($sourcePath, "*", [IO.SearchOption]::AllDirectories)
-                
-                foreach ($file in $files) {
-                    $relPath = $file.Substring($sourcePath.Length).TrimStart('\\').TrimStart('/').Replace("\\\\", "/").Replace("\\", "/")
-                    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file, $relPath)
-                }
-                $zip.Dispose()
-                Write-Host "Zipping completed successfully!"
-            } catch {
-                Write-Host "An error occurred: $_"
-            }
+            Write-Host "Zipping completed successfully!"
         '''
     }
 }
