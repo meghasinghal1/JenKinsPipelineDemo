@@ -4,10 +4,20 @@ pipeline {
     stages {
         stage('zipRepo') {
             steps {
-                echo 'This is a message from the zipRepo stage'
-                powershell  '''
-                    Write-Output "Zipping completed successfully!" | Out-Host
-                '''
+                script {
+                    try {
+                        // Attempt to use PowerShell Core (pwsh)
+                        pwsh '''
+                            Write-Output "Zipping completed successfully (pwsh)!" | Out-Host
+                        '''
+                    } catch (Exception e) {
+                        // If pwsh fails, use Windows PowerShell
+                        echo "Failed to run pwsh: ${e.message}, falling back to Windows PowerShell."
+                        powershell '''
+                            Write-Output "Zipping completed successfully (powershell)!" | Out-Host
+                        '''
+                    }
+                }
             }
         }
     }
