@@ -5,7 +5,7 @@ pipeline {
         stage('zipRepo') {
             steps {
                 echo 'This is a message from the zipRepo stage'
-                pwsh '''
+                powershell  '''
                     Write-Output "Zipping completed successfully!" | Out-Host
                 '''
             }
