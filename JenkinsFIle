@@ -3,32 +3,35 @@ pipeline {
 
     stages {
         stage('zipRepo') {
-            steps {
-                pwsh '''
-					$sourcePath = "${env:WORKSPACE}"
-					write-host "$sourcePath"
-					$destinationPath = Split-Path -Path "$sourcePath"
-					$destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
-					Write-Host "$destinationPath"
-					
-                    if(Test-Path -Path $destinationPath -PathType Leaf)
-                    {
-                        Remove-Item $destinationPath
-                    }
-
-                    Add-Type -Assembly \'System.IO.Compression.FileSystem\'
-                    $zip = [System.IO.Compression.ZipFile]::Open($destinationPath, \'create\')
-                    $files = [IO.Directory]::GetFiles($sourcePath, "*" , [IO.SearchOption]::AllDirectories)
-                    foreach($file in $files)
-                    {
-                        $relPath = $file.Substring($sourcePath.Length).TrimStart('\\').TrimStart('/').Replace("\\\\", "/").Replace("\\", "/")
-                        $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("\\\\", "/").Replace("\\", "/"), $relPath);
-                    }
-                    $zip.Dispose()
-				
-				'''
+    steps {
+        pwsh '''
+            try {
+                $sourcePath = "${env:WORKSPACE}"
+                Write-Host "Source Path: $sourcePath"
+                
+                $destinationPath = Join-Path -Path (Split-Path -Path "$sourcePath") -ChildPath "${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
+                Write-Host "Destination Path: $destinationPath"
+                
+                if (Test-Path -Path $destinationPath -PathType Leaf) {
+                    Remove-Item $destinationPath -Force
+                }
+                
+                Add-Type -Assembly 'System.IO.Compression.FileSystem'
+                $zip = [System.IO.Compression.ZipFile]::Open($destinationPath, 'create')
+                $files = [IO.Directory]::GetFiles($sourcePath, "*", [IO.SearchOption]::AllDirectories)
+                
+                foreach ($file in $files) {
+                    $relPath = $file.Substring($sourcePath.Length).TrimStart('\\').TrimStart('/').Replace("\\\\", "/").Replace("\\", "/")
+                    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file, $relPath)
+                }
+                $zip.Dispose()
+                Write-Host "Zipping completed successfully!"
+            } catch {
+                Write-Host "An error occurred: $_"
             }
-        }
+        '''
+    }
+}
 		stage('uploadZip') {
             steps {
                 pwsh '''
