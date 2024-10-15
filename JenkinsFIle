@@ -12,7 +12,7 @@ pipeline {
                             pwsh command
                         } catch (Exception e) {
                             // If pwsh fails, use Windows PowerShell
-                            echo "Failed to run pwsh: ${e.message}, falling back to Windows PowerShell."
+                            echo "\u001B[33mFailed to run pwsh: ${e.message}, falling back to Windows PowerShell.\u001B[0m"
                             powershell command
                         }
                     }
