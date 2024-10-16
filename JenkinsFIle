@@ -34,7 +34,9 @@ pipeline {
 		        $zipFile = [System.IO.Compression.ZipFile]::OpenRead($destinationPath)
 		        $zipEntriesCount = $zipFile.Entries.Count
 		        Write-Host "Number of files in the zip: $zipEntriesCount"
-		        $zipFile.Dispose()				
+		        $zipFile.Dispose()
+			write-host "source path-$sourcePath"
+			write-host "destination path-$destinationPath"
 				'''
             }
         }
