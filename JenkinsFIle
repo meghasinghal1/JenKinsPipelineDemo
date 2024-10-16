@@ -1,12 +1,13 @@
 pipeline {
     agent any
 
+    // Define a reusable function to run PowerShell commands
     stages {
         stage('Initialize') {
             steps {
                 script {
-                    // Define the reusable function to run PowerShell commands
-                    env.runPowerShell = { command ->
+                    // Define the reusable function in the script context
+                    def runPowerShell = { command ->
                         try {
                             // Attempt to use PowerShell Core (pwsh)
                             pwsh command
@@ -16,6 +17,9 @@ pipeline {
                             powershell command
                         }
                     }
+
+                    // Store the function in a variable accessible in the following steps
+                    currentBuild.rawBuild.getActions().add(new hudson.model.Run.RunAction<Closure>(runPowerShell))
                 }
             }
         }
@@ -23,10 +27,13 @@ pipeline {
         stage('zipRepo') {
             steps {
                 script {
+                    // Access the function stored in the previous stage
+                    def runPowerShell = currentBuild.rawBuild.getActions(hudson.model.Run.RunAction).find { it instanceof Closure }
+                    
                     // Call the common function with the desired command
-                    powershell '''
+                    runPowerShell('''
                         Write-Output "Zipping completed successfully!" | Out-Host
-                    '''
+                    ''')
                 }
             }
         }
@@ -34,10 +41,13 @@ pipeline {
         stage('uploadZip') {
             steps {
                 script {
+                    // Access the function stored in the previous stage
+                    def runPowerShell = currentBuild.rawBuild.getActions(hudson.model.Run.RunAction).find { it instanceof Closure }
+                    
                     // Call the common function with the desired command
-                    powershell '''
+                    runPowerShell('''
                         Write-Output "Uploading completed successfully!" | Out-Host
-                    '''
+                    ''')
                 }
             }
         }
