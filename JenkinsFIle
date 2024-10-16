@@ -2,45 +2,27 @@ pipeline {
     agent any
 
     stages {
-        stage('Define Function') {
+        stage('zipRepo') {
             steps {
                 script {
-                    // Define the reusable function to run PowerShell commands
+                    // Define a reusable function to run PowerShell commands
                     def runPowerShell = { command ->
                         try {
                             // Attempt to use PowerShell Core (pwsh)
                             pwsh command
                         } catch (Exception e) {
-                            // If pwsh fails, use Windows PowerShell
-                            echo "Failed to run pwsh: ${e.message}, falling back to Windows PowerShell."
+                            // If pwsh fails, use Windows PowerShell with colored output
+                            ansiColor('xterm') {
+                                echo "Failed to run pwsh: ${e.message}, falling back to Windows PowerShell."
+                            }
                             powershell command
                         }
                     }
 
-                    // Store the function in the current script context
-                    this.metaClass.runPowerShell = runPowerShell
-                }
-            }
-        }
-
-        stage('zipRepo') {
-            steps {
-                script {
-                    // Call the common function with the desired command
-                    runPowerShell('''
+                    // Call the function with the desired command
+                    runPowerShell '''
                         Write-Output "Zipping completed successfully!" | Out-Host
-                    ''')
-                }
-            }
-        }
-
-        stage('uploadZip') {
-            steps {
-                script {
-                    // Call the common function with the desired command
-                    runPowerShell('''
-                        Write-Output "Uploading completed successfully!" | Out-Host
-                    ''')
+                    '''
                 }
             }
         }
