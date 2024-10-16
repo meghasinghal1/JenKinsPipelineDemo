@@ -5,31 +5,36 @@ pipeline {
         stage('zipRepo') {
             steps {
                 pwsh '''
-					$sourcePath = "${env:WORKSPACE}"
-					write-host "$sourcePath"
-					$destinationPath = Split-Path -Path "$sourcePath"
-					$destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
-					Write-Host "$destinationPath"
-					
-                    if(Test-Path -Path $destinationPath -PathType Leaf)
-                    {
-                        Remove-Item $destinationPath
-                    }
-
-                    Add-Type -Assembly \'System.IO.Compression.FileSystem\'
-                    $zip = [System.IO.Compression.ZipFile]::Open($destinationPath, \'create\')
-                    $files = [IO.Directory]::GetFiles($sourcePath, "*" , [IO.SearchOption]::AllDirectories)
-		    $fileCount = $files.Length
-                    Write-Host "Number of files to be zipped: $fileCount"
-                    foreach($file in $files)
-                    {
-                        $relPath = $file.Substring($sourcePath.Length).TrimStart('\\').TrimStart('/')
-                        $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file, $relPath);
-                    }
-                    $zipEntriesCount = $zip.Entries.Count
-                    Write-Host "Number of files in the zip: $zipEntriesCount"
-                    $zip.Dispose()
-				
+			$sourcePath = "${env:WORKSPACE}"
+		        write-host "$sourcePath"
+		        $destinationPath = Split-Path -Path "$sourcePath"
+		        $destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
+		        Write-Host "$destinationPath"
+		        
+		        if (Test-Path -Path $destinationPath -PathType Leaf) {
+		            Remove-Item $destinationPath
+		        }
+		        
+		        Add-Type -Assembly 'System.IO.Compression.FileSystem'
+		        $zip = [System.IO.Compression.ZipFile]::Open($destinationPath, 'create')
+		        
+		        $files = [IO.Directory]::GetFiles($sourcePath, "*" , [IO.SearchOption]::AllDirectories)
+		        $fileCount = $files.Length
+		        Write-Host "Number of files to be zipped: $fileCount"
+		        
+		        foreach ($file in $files) {
+		            $relPath = $file.Substring($sourcePath.Length).TrimStart('\\').TrimStart('/').Replace("\\\\", "/").Replace("\\", "/")
+		            $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("\\\\", "/").Replace("\\", "/"), $relPath)
+		        }
+		        
+		        $zip.Dispose()
+		        
+		        # Open the zip file again to get the count of files inside
+		        Add-Type -Assembly 'System.IO.Compression.FileSystem'
+		        $zipFile = [System.IO.Compression.ZipFile]::OpenRead($destinationPath)
+		        $zipEntriesCount = $zipFile.Entries.Count
+		        Write-Host "Number of files in the zip: $zipEntriesCount"
+		        $zipFile.Dispose()				
 				'''
             }
         }
