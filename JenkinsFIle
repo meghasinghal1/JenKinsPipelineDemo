@@ -11,10 +11,8 @@ pipeline {
                             // Attempt to use PowerShell Core (pwsh)
                             pwsh command
                         } catch (Exception e) {
-                            // If pwsh fails, use Windows PowerShell with colored output
-                            ansiColor('xterm') {
-                                echo "Failed to run pwsh: ${e.message}, falling back to Windows PowerShell."
-                            }
+                            // If pwsh fails, use Windows PowerShell
+                            echo "Failed to run pwsh: ${e.message}, falling back to Windows PowerShell."
                             powershell command
                         }
                     }
