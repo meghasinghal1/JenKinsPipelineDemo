@@ -23,8 +23,8 @@ pipeline {
                     Write-Host "Number of files to be zipped: $fileCount"
                     foreach($file in $files)
                     {
-                        $relPath = $file.Substring($sourcePath.Length).TrimStart('\\').TrimStart('/').Replace("\\\\", "/").Replace("\\", "/")
-                        $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("\\\\", "/").Replace("\\", "/"), $relPath);
+                        $relPath = $file.Substring($sourcePath.Length).TrimStart('\\').TrimStart('/')
+                        $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file, $relPath);
                     }
                     $zipEntriesCount = $zip.Entries.Count
                     Write-Host "Number of files in the zip: $zipEntriesCount"
