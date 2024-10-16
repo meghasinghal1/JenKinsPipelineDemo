@@ -24,7 +24,7 @@ pipeline {
             steps {
                 script {
                     // Call the common function with the desired command
-                    env.runPowerShell '''
+                    powershell '''
                         Write-Output "Zipping completed successfully!" | Out-Host
                     '''
                 }
@@ -35,7 +35,7 @@ pipeline {
             steps {
                 script {
                     // Call the common function with the desired command
-                    env.runPowerShell '''
+                    powershell '''
                         Write-Output "Uploading completed successfully!" | Out-Host
                     '''
                 }
