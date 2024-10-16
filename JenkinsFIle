@@ -1,12 +1,11 @@
 pipeline {
     agent any
 
-    // Define a reusable function to run PowerShell commands
     stages {
-        stage('Initialize') {
+        stage('Define Function') {
             steps {
                 script {
-                    // Define the reusable function in the script context
+                    // Define the reusable function to run PowerShell commands
                     def runPowerShell = { command ->
                         try {
                             // Attempt to use PowerShell Core (pwsh)
@@ -18,8 +17,8 @@ pipeline {
                         }
                     }
 
-                    // Store the function in a variable accessible in the following steps
-                    currentBuild.rawBuild.getActions().add(new hudson.model.Run.RunAction<Closure>(runPowerShell))
+                    // Store the function in the current script context
+                    this.metaClass.runPowerShell = runPowerShell
                 }
             }
         }
@@ -27,9 +26,6 @@ pipeline {
         stage('zipRepo') {
             steps {
                 script {
-                    // Access the function stored in the previous stage
-                    def runPowerShell = currentBuild.rawBuild.getActions(hudson.model.Run.RunAction).find { it instanceof Closure }
-                    
                     // Call the common function with the desired command
                     runPowerShell('''
                         Write-Output "Zipping completed successfully!" | Out-Host
@@ -41,9 +37,6 @@ pipeline {
         stage('uploadZip') {
             steps {
                 script {
-                    // Access the function stored in the previous stage
-                    def runPowerShell = currentBuild.rawBuild.getActions(hudson.model.Run.RunAction).find { it instanceof Closure }
-                    
                     // Call the common function with the desired command
                     runPowerShell('''
                         Write-Output "Uploading completed successfully!" | Out-Host
