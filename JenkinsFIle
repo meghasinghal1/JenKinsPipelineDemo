@@ -18,7 +18,7 @@ pipeline {
                 $sourcePath = "${env:WORKSPACE}"
                 Write-Host "Source Path: $sourcePath"
                 $destinationPath = Split-Path -Path "$sourcePath"
-                $destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
+                $destinationPath += "/${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
                 Write-Host "Destination Path: $destinationPath"
 
                 if(Test-Path -Path $destinationPath -PathType Leaf) {
