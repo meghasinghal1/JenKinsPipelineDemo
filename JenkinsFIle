@@ -40,7 +40,7 @@ pipeline {
 			}
 			$zip.Dispose()
 
-			$zipFileSize = (Get-Item "/var/jenkins_home/workspace\sast-scan-test-23.zip").Length
+			$zipFileSize = (Get-Item "/var/jenkins_home/workspace\\sast-scan-test-23.zip").Length
                 	Write-Host "Zip File Size: $zipFileSize bytes"
                     '''
                 }
