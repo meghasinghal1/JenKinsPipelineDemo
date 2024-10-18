@@ -3,44 +3,49 @@ pipeline {
 
     stages {
         stage('zipRepo') {
-    steps {
-        script {
-            def runPowerShell = { command ->
-                try {
-                    pwsh command
-                } catch (Exception e) {
-                    echo "Failed to run pwsh: ${e.message}, falling back to Windows PowerShell."
-                    powershell command
+            steps {
+                script {
+                    // Define a reusable function to run PowerShell commands
+                    def runPowerShell = { command ->
+                        try {
+                            // Attempt to use PowerShell Core (pwsh)
+                            pwsh command
+                        } catch (Exception e) {
+                            // If pwsh fails, use Windows PowerShell
+                            echo "Failed to run pwsh: ${e.message}, falling back to Windows PowerShell."
+                            powershell command
+                        }
+                    }
+
+                    // Call the function with the desired command
+                    runPowerShell '''
+                        $sourcePath = "${env:WORKSPACE}"
+			write-host "$sourcePath"
+			$destinationPath = Split-Path -Path "$sourcePath"
+			$destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
+			Write-Host "$destinationPath"
+			
+			if(Test-Path -Path $destinationPath -PathType Leaf)
+			{
+				Remove-Item $destinationPath
+			}
+
+			Add-Type -Assembly \'System.IO.Compression.FileSystem\'
+			$zip = [System.IO.Compression.ZipFile]::Open($destinationPath, \'create\')
+			$files = [IO.Directory]::GetFiles($sourcePath, "*" , [IO.SearchOption]::AllDirectories)
+			foreach($file in $files)
+			{
+				$relPath = $file.Substring($sourcePath.Length).TrimStart('\\').TrimStart('/').Replace("\\\\", "/").Replace("\\", "/")
+				$a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("\\\\", "/").Replace("\\", "/"), $relPath);
+			}
+			$zip.Dispose()
+
+			$zipFileSize = (Get-Item $destinationPath).Length
+                	Write-Host "Zip File Size: $zipFileSize bytes"
+                    '''
                 }
             }
-
-            runPowerShell '''
-                $sourcePath = "${env:WORKSPACE}"
-                Write-Host "Source Path: $sourcePath"
-                $destinationPath = Split-Path -Path "$sourcePath"
-                $destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
-                Write-Host "Destination Path: $destinationPath"
-
-                if(Test-Path -Path $destinationPath -PathType Leaf) {
-                    Remove-Item $destinationPath
-                }
-
-                Add-Type -Assembly 'System.IO.Compression.FileSystem'
-                $zip = [System.IO.Compression.ZipFile]::Open($destinationPath, 'create')
-                $files = [IO.Directory]::GetFiles($sourcePath, "*", [IO.SearchOption]::AllDirectories)
-                foreach($file in $files) {  
-		    $relPath = $file.Substring($sourcePath.Length).TrimStart('/').TrimStart('\\').Replace("//", "\\").Replace("/", "\\")
-                    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("//", "\\").Replace("/", "\\"), $relPath)
-                }
-                $zip.Dispose()
-
-                # Check the size of the created zip file
-                $zipFileSize = (Get-Item $destinationPath).Length
-                Write-Host "Zip File Size: $zipFileSize bytes"
-            '''
         }
-    }
-}
 		stage('uploadZip') {
             steps {
                 script {
