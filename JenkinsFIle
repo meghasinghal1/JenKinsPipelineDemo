@@ -3,77 +3,162 @@ pipeline {
 
     stages {
         stage('zipRepo') {
+    steps {
+        script {
+            def runPowerShell = { command ->
+                try {
+                    pwsh command
+                } catch (Exception e) {
+                    echo "Failed to run pwsh: ${e.message}, falling back to Windows PowerShell."
+                    powershell command
+                }
+            }
+
+            runPowerShell '''
+                $sourcePath = "${env:WORKSPACE}"
+                Write-Host "Source Path: $sourcePath"
+                $destinationPath = Split-Path -Path "$sourcePath"
+                $destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
+                Write-Host "Destination Path: $destinationPath"
+
+                if(Test-Path -Path $destinationPath -PathType Leaf) {
+                    Remove-Item $destinationPath
+                }
+
+                Add-Type -Assembly 'System.IO.Compression.FileSystem'
+                $zip = [System.IO.Compression.ZipFile]::Open($destinationPath, 'create')
+                $files = [IO.Directory]::GetFiles($sourcePath, "*", [IO.SearchOption]::AllDirectories)
+                foreach($file in $files) {
+                    $relPath = $file.Substring($sourcePath.Length).TrimStart('\\').TrimStart('/').Replace("\\\\", "/").Replace("\\", "/")
+                    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("\\\\", "/").Replace("\\", "/"), $relPath)
+                }
+                $zip.Dispose()
+
+                # Check the size of the created zip file
+                $zipFileSize = (Get-Item $destinationPath).Length
+                Write-Host "Zip File Size: $zipFileSize bytes"
+            '''
+        }
+    }
+}
+		stage('uploadZip') {
             steps {
                 script {
-                    // Define a reusable function for zipping files
-                    def zipFiles = { isWindows ->
-                        if (isWindows) {
-                            bat '''
-                                set sourcePath=%WORKSPACE%
-                                set destinationPath=%sourcePath%\\%JOB_NAME%-%BUILD_NUMBER%.zip
-
-                                if exist "%destinationPath%" (
-                                    del "%destinationPath%"
-                                )
-
-                                powershell -command "Add-Type -Assembly 'System.IO.Compression.FileSystem'; \
-                                $zip = [System.IO.Compression.ZipFile]::Open('%destinationPath%', 'create'); \
-                                $files = Get-ChildItem -Path '%sourcePath%' -Recurse; \
-                                foreach ($file in $files) { \
-                                    $relPath = $file.FullName.Substring($sourcePath.Length + 1); \
-                                    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.FullName, $relPath); \
-                                }; \
-                                $zip.Dispose();"
-                            '''
-                        } else {
-                            sh '''
-                                zip -r "${WORKSPACE}/${JOB_NAME}-${BUILD_NUMBER}.zip" "${WORKSPACE}/."
-                            '''
+                    // Define a reusable function to run PowerShell commands
+                    def runPowerShell = { command ->
+                        try {
+                            // Attempt to use PowerShell Core (pwsh)
+                            pwsh command
+                        } catch (Exception e) {
+                            // If pwsh fails, use Windows PowerShell
+                            echo "Failed to run pwsh: ${e.message}, falling back to Windows PowerShell."
+                            powershell command
                         }
                     }
 
-                    // Check if the agent is running on Windows
-                    def isWindows = isUnix() ? false : true
+                    // Call the function with the desired command
+                    runPowerShell '''
+                        Write-Host "Received scanning request successfully.."
+					
+						$selfUrl = "${env:BUILD_URL}console"
+						$sourcePath = "${env:WORKSPACE}"
+						$filePath = Split-Path -Path "$sourcePath"
+						$filePath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
+						Write-Host "$filePath"
 
-                    // Call the zip function
-                    zipFiles(isWindows)
-                }
-            }
-        }
+						$buildId = "${env:JOB_NAME}-${env:BUILD_NUMBER}"
+						$allowDependencyScan = $false
+						$allowMalwareScan = $false
+						$allowLicenseScan = $false
 
-        stage('uploadZip') {
-            steps {
-                script {
-                    // Set the zip file path
-                    def zipFilePath = isUnix() ? "${env.WORKSPACE}/${env.JOB_NAME}-${env.BUILD_NUMBER}.zip" : "${env.WORKSPACE}\\${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
+						if("$env:Offensive360SastApi_ProjectId" -ne "")
+						{
+							$projectId = "$env:Offensive360SastApi_ProjectId"
+						}
+						if("$env:Offensive360SastApi_AllowDependencyScan" -ne "")
+						{
+							$allowDependencyScan = "$env:Offensive360SastApi_AllowDependencyScan"
+						}
+						if("$env:Offensive360SastApi_AllowMalwareScan" -ne "")
+						{
+							$allowMalwareScan = "$env:Offensive360SastApi_AllowMalwareScan"
+						}
+						if("$env:Offensive360SastApi_AllowLicenseScan" -ne "")
+						{
+							$allowLicenseScan = "$env:Offensive360SastApi_AllowLicenseScan"
+						}
 
-                    // Check if the zip file exists
-                    if (!fileExists(zipFilePath)) {
-                        error "Zip file does not exist: ${zipFilePath}"
-                    }
+						$projectName = "$buildId"
+						$boundary = [System.Guid]::NewGuid().ToString()
 
-                    // Prepare the upload command
-                    def uploadCommand = isWindows ? '''
-                        set zipFilePath=%WORKSPACE%\\%JOB_NAME%-%BUILD_NUMBER%.zip
-                        curl -X POST "%Offensive360SastApi_BaseUrl%/app/api/externalScan" ^
-                        -H "Content-Type: multipart/form-data" ^
-                        -F "fileSource=@%zipFilePath%" ^
-                        -H "Authorization: Bearer %Offensive360SastApi_AccessToken%" ^
-                        -H "Accept: application/json"
-                    ''' : '''
-                        curl -X POST "${env.Offensive360SastApi_BaseUrl}/app/api/externalScan" \
-                        -H "Content-Type: multipart/form-data" \
-                        -F "fileSource=@${zipFilePath}" \
-                        -H "Authorization: Bearer ${env.Offensive360SastApi_AccessToken}" \
-                        -H "Accept: application/json"
+						Write-Host "Starting scanning for the project name [$projectName], url [$env:Offensive360SastApi_BaseUrl], buildId [$buildId], filePath [$filePath], boundary [$boundary], projectId [$env:Offensive360SastApi_ProjectId], AllowDependencyScan [$allowDependencyScan], AllowMalwareScan [$allowMalwareScan], AllowLicenseScan [$allowLicenseScan]"
+
+						$fileBytes = [System.IO.File]::ReadAllBytes($filePath)
+						$fileContent = [System.Text.Encoding]::GetEncoding(\'iso-8859-1\').GetString($fileBytes)
+
+						$LF = "`r`n"
+						$bodyLines = (
+							"--$boundary",
+							"Content-Disposition: form-data; name=`"name`"$LF",
+							"$projectName",
+							"--$boundary",
+							"Content-Disposition: form-data; name=`"projectId`"$LF",
+							"$projectId",
+							"--$boundary",
+							"Content-Disposition: form-data; name=`"keepInvisibleAndDeletePostScan`"$LF",
+							"false",
+							"--$boundary",
+							"Content-Disposition: form-data; name=`"allowDependencyScan`"$LF",
+							"$allowDependencyScan",
+							"--$boundary",
+							"Content-Disposition: form-data; name=`"allowMalwareScan`"$LF",
+							"$allowMalwareScan",
+							"--$boundary",
+							"Content-Disposition: form-data; name=`"allowLicenseScan`"$LF",
+							"$allowLicenseScan",
+							"--$boundary",
+							"Content-Disposition: form-data; name=`"externalScanSourceType`"$LF",
+							"Jenkins",
+							"--$boundary",
+							"Content-Disposition: form-data; name=`"pipelineUrl`"$LF",
+							"$selfUrl",
+							"--$boundary",
+							"Content-Disposition: form-data; name=`"fileSource`"; filename=`"$projectName.zip`"",
+							"Content-Type: application/x-zip-compressed$LF",
+							$fileContent,
+							"--$boundary--$LF"
+						) -join $LF
+
+						$apiResponse = Invoke-RestMethod -Method Post -Uri ("{0}/app/api/externalScan" -f $env:Offensive360SastApi_BaseUrl.TrimEnd('/')) -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer $env:Offensive360SastApi_AccessToken"} -Body $bodyLines
+
+						write-host ("Total Vulnerabilities Count : {0}" -f $apiResponse.vulnerabilities.length)
+						write-host ("Total Malwares Count : {0}" -f $apiResponse.malwares.length)
+						write-host ("Total Licenses Count : {0}" -f $apiResponse.licenses.length)
+						write-host ("Total Dependency Vulnerabilities Count : {0}" -f $apiResponse.dependencyVulnerabilities.length)
+
+						if (($apiResponse.vulnerabilities.length -gt 0 -or $apiResponse.malwares.length -gt 0 -or $apiResponse.licenses.length -gt 0 -or $apiResponse.dependencyVulnerabilities.length -gt 0) -and "$env:Pipeline_BreakBuildWhenVulnsFound" -eq \'True\') 
+						{
+							write-host "\n\n**********************************************************************************************************************"
+							write-host ("Offensive 360 vulnerability dashboard : {0}/scan/{1}" -f $env:Offensive360SastUi_BaseUrl.TrimEnd('/'), $apiResponse.projectId)
+							write-host "**********************************************************************************************************************\n\n"
+							throw [System.Exception] "Vulnerabilities found and breaking the build."
+						}
+						elseif ($apiResponse.vulnerabilities.length -gt 0 -and "$env:Pipeline_BreakBuildWhenVulnsFound" -ne \'True\') 
+						{
+							Write-Warning \'Vulnerabilities found and since Pipeline_BreakBuildWhenVulnsFound is set to false so continuing to build it.\'
+						}
+						else
+						{
+							Write-Warning \'No vulnerabilities found and continuing to build it.\'
+						}
+
+						Write-Host "Finished SAST file scanning."
+						
+						if(Test-Path -Path $filePath -PathType Leaf)
+						{
+							Remove-Item $filePath
+						}
                     '''
-
-                    // Execute the upload command
-                    if (isWindows) {
-                        bat uploadCommand
-                    } else {
-                        sh uploadCommand
-                    }
                 }
             }
         }
