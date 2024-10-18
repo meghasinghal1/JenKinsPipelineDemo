@@ -18,7 +18,7 @@ pipeline {
                 $sourcePath = "${env:WORKSPACE}"
                 Write-Host "Source Path: $sourcePath"
                 $destinationPath = Split-Path -Path "$sourcePath"
-                $destinationPath += "/${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
+                $destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
                 Write-Host "Destination Path: $destinationPath"
 
                 if(Test-Path -Path $destinationPath -PathType Leaf) {
@@ -28,9 +28,9 @@ pipeline {
                 Add-Type -Assembly 'System.IO.Compression.FileSystem'
                 $zip = [System.IO.Compression.ZipFile]::Open($destinationPath, 'create')
                 $files = [IO.Directory]::GetFiles($sourcePath, "*", [IO.SearchOption]::AllDirectories)
-                foreach($file in $files) {
-                    $relPath = $file.Substring($sourcePath.Length)
-                    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file, $relPath)
+                foreach($file in $files) {  
+		    $relPath = $file.Substring($sourcePath.Length).TrimStart('/').TrimStart('\\').Replace("//", "\\").Replace("/", "\\")
+                    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("//", "\\").Replace("/", "\\"), $relPath)
                 }
                 $zip.Dispose()
 
