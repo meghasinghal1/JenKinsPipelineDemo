@@ -22,7 +22,8 @@ pipeline {
                         $sourcePath = "${env:WORKSPACE}"
 						write-host "$sourcePath"
 						$destinationPath = Split-Path -Path "$sourcePath"
-						$destinationPath = [System.IO.Path]::Combine($sourcePath, "${env:JOB_NAME}-${env:BUILD_NUMBER}.zip")
+						#$destinationPath = [System.IO.Path]::Combine($sourcePath, "${env:JOB_NAME}-${env:BUILD_NUMBER}.zip")
+						$destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
 						Write-Host "$destinationPath"
 						
 						if(Test-Path -Path $destinationPath -PathType Leaf)
@@ -39,6 +40,8 @@ pipeline {
 							$a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file, $relPath);
 						}
 						$zip.Dispose()
+					$zipFileSize = (Get-Item $destinationPath).Length
+                			Write-Host "Zip File Size: $zipFileSize bytes"
                     '''
                 }
             }
@@ -65,7 +68,8 @@ pipeline {
 						$selfUrl = "${env:BUILD_URL}console"
 						$sourcePath = "${env:WORKSPACE}"
 						$filePath = Split-Path -Path "$sourcePath"
-						$filePath = [System.IO.Path]::Combine($sourcePath, "${env:JOB_NAME}-${env:BUILD_NUMBER}.zip")
+						#$filePath = [System.IO.Path]::Combine($sourcePath, "${env:JOB_NAME}-${env:BUILD_NUMBER}.zip")
+						$filePath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
 						Write-Host "$filePath"
 
 						$buildId = "${env:JOB_NAME}-${env:BUILD_NUMBER}"
