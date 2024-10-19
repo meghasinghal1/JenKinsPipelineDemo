@@ -27,7 +27,12 @@ pipeline {
 			
 			if(Test-Path -Path $destinationPath -PathType Leaf)
 			{
+				Write-Host "Zip file does exist and will delete this will be creating new one"
 				Remove-Item $destinationPath
+			}
+			else
+			{
+				Write-Host "Zip file doesn't exist and will be creating new one"
 			}
 
 			Add-Type -Assembly \'System.IO.Compression.FileSystem\'
@@ -40,8 +45,17 @@ pipeline {
 			}
 			$zip.Dispose()
 
-			$zipFileSize = (Get-Item $destinationPath).Length
-                	Write-Host "Zip File Size: $zipFileSize bytes"
+			if(Test-Path -Path $destinationPath -PathType Leaf)
+			{
+				Write-Host "Zip file does exist...."
+				$zipFileSize = (Get-Item $destinationPath).Length
+                		Write-Host "Zip File Size: $zipFileSize bytes"
+			}
+			else
+			{
+				Write-Host "Zip file doesn't exist, there is some issues"
+			}
+			
                     '''
                 }
             }
