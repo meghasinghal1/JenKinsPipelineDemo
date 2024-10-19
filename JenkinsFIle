@@ -84,11 +84,12 @@ pipeline {
 					
 						$selfUrl = "${env:BUILD_URL}console"
 						$sourcePath = "${env:WORKSPACE}"
+						$buildId = "${env:JOB_NAME}-${env:BUILD_NUMBER}"
 						$filePath = Split-Path -Path "$sourcePath"
-						$filePath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
+						$filePath = [System.IO.Path]::Combine($sourcePath, "${buildId}.zip")
 						Write-Host "$filePath"
 
-						$buildId = "${env:JOB_NAME}-${env:BUILD_NUMBER}"
+						
 						$allowDependencyScan = $false
 						$allowMalwareScan = $false
 						$allowLicenseScan = $false
