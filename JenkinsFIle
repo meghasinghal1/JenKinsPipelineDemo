@@ -89,7 +89,13 @@ pipeline {
 						$filePath = [System.IO.Path]::Combine($sourcePath, "${buildId}.zip")
 						Write-Host "$filePath"
 
-						
+						 if (Test-Path -Path $filePath -PathType Leaf) {
+                    Write-Host "Zip file was created successfully."
+                    $zipFileSize = (Get-Item $filePath).Length
+                    Write-Host "Zip File Size: $zipFileSize bytes"
+                } else {
+                    Write-Host "Zip file does not exist, there are some issues."
+                }
 						$allowDependencyScan = $false
 						$allowMalwareScan = $false
 						$allowLicenseScan = $false
