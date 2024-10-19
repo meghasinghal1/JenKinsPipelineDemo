@@ -2,51 +2,47 @@ pipeline {
     agent any
 
     stages {
-         stage('zipRepo') {
+        stage('zipRepo') {
             steps {
                 script {
+                    // Define a reusable function to run PowerShell commands
                     def runPowerShell = { command ->
                         try {
+                            // Attempt to use PowerShell Core (pwsh)
                             pwsh command
                         } catch (Exception e) {
+                            // If pwsh fails, use Windows PowerShell
                             echo "Failed to run pwsh: ${e.message}, falling back to Windows PowerShell."
                             powershell command
                         }
                     }
 
-                    // Detect if running on Windows or Linux
-                    def isWindows = isUnix() ? false : true
+                    // Call the function with the desired command
+                    runPowerShell '''
+                        $sourcePath = "${env:WORKSPACE}"
+			write-host "$sourcePath"
+			$destinationPath = Split-Path -Path "$sourcePath"
+			$destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
+			Write-Host "$destinationPath"
+			
+			if(Test-Path -Path $destinationPath -PathType Leaf)
+			{
+				Remove-Item $destinationPath
+			}
 
-                    // Set the source and destination paths based on the OS
-                    def sourcePath = isWindows ? "${env:WORKSPACE}" : "${env.WORKSPACE}"
-                    def destinationPath = isWindows ? "${env:WORKSPACE}\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip" : "${env.WORKSPACE}/${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
+			Add-Type -Assembly \'System.IO.Compression.FileSystem\'
+			$zip = [System.IO.Compression.ZipFile]::Open($destinationPath, \'create\')
+			$files = [IO.Directory]::GetFiles($sourcePath, "*" , [IO.SearchOption]::AllDirectories)
+			foreach($file in $files)
+			{
+				$relPath = $file.Substring($sourcePath.Length).TrimStart('\\').TrimStart('/').Replace("\\\\", "/").Replace("\\", "/")
+				$a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("\\\\", "/").Replace("\\", "/"), $relPath);
+			}
+			$zip.Dispose()
 
-                    runPowerShell """
-                        \$sourcePath = '${sourcePath}'
-                        Write-Host "\$sourcePath"
-                        \$destinationPath = '${destinationPath}'
-                        Write-Host "\$destinationPath"
-                        
-                        if(Test-Path -Path \$destinationPath -PathType Leaf) {
-                            Remove-Item \$destinationPath
-                        }
-
-                        Add-Type -Assembly 'System.IO.Compression.FileSystem'
-                        \$zip = [System.IO.Compression.ZipFile]::Open(\$destinationPath, 'create')
-                        \$files = [IO.Directory]::GetFiles(\$sourcePath, "*", [IO.SearchOption]::AllDirectories)
-                        foreach(\$file in \$files) {
-                            \$relPath = \$file.Substring(\$sourcePath.Length).TrimStart('\\').TrimStart('/').Replace("\\\\", "/").Replace("\\", "/")
-                            [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(\$zip, \$file.Replace("\\\\", "/").Replace("\\", "/"), \$relPath)
-                        }
-                        \$zip.Dispose()
-
-                        if (Test-Path -Path \$destinationPath -PathType Leaf) {
-                            \$zipFileSize = (Get-Item \$destinationPath).Length
-                            Write-Host "Zip File Size: \$zipFileSize bytes"
-                        } else {
-                            Write-Host "Zip file does not exist after creation."
-                        }
-                    """
+			$zipFileSize = (Get-Item $destinationPath).Length
+                	Write-Host "Zip File Size: $zipFileSize bytes"
+                    '''
                 }
             }
         }
