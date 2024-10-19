@@ -68,7 +68,7 @@ pipeline {
 					Write-Host "Starting scanning for the project name [$projectName], url [$env:Offensive360SastApi_BaseUrl], buildId [$buildId], filePath [$filePath], boundary [$boundary], projectId [$env:Offensive360SastApi_ProjectId], AllowDependencyScan [$allowDependencyScan], AllowMalwareScan [$allowMalwareScan], AllowLicenseScan [$allowLicenseScan]"
 
 					$fileBytes = [System.IO.File]::ReadAllBytes($filePath)
-					//$fileContent = [System.Text.Encoding]::GetEncoding(\'iso-8859-1\').GetString($fileBytes)
+					#$fileContent = [System.Text.Encoding]::GetEncoding(\'iso-8859-1\').GetString($fileBytes)
 					$fileSize = $fileBytes.Length
 					Write-Host "File Size: $fileSize bytes"
 
