@@ -22,7 +22,7 @@ pipeline {
                         $sourcePath = "${env:WORKSPACE}"
 						write-host "$sourcePath"
 						$destinationPath = Split-Path -Path "$sourcePath"
-						#$destinationPath = [System.IO.Path]::Combine($sourcePath, "${env:JOB_NAME}-${env:BUILD_NUMBER}.zip")
+						$destinationPath1 = [System.IO.Path]::Combine($sourcePath, "${env:JOB_NAME}-${env:BUILD_NUMBER}.zip")
 						$destinationPath += "\\${env:JOB_NAME}-${env:BUILD_NUMBER}.zip"
 						Write-Host "$destinationPath"
 						
@@ -40,7 +40,7 @@ pipeline {
 							$a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file, $relPath);
 						}
 						$zip.Dispose()
-					$zipFileSize = (Get-Item $destinationPath).Length
+					$zipFileSize = (Get-Item $destinationPath1).Length
                 			Write-Host "Zip File Size: $zipFileSize bytes"
                     '''
                 }
