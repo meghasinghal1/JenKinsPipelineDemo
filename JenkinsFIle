@@ -123,43 +123,54 @@ pipeline {
 						Write-Host "Starting scanning for the project name [$projectName], url [$env:Offensive360SastApi_BaseUrl], buildId [$buildId], filePath [$filePath], boundary [$boundary], projectId [$env:Offensive360SastApi_ProjectId], AllowDependencyScan [$allowDependencyScan], AllowMalwareScan [$allowMalwareScan], AllowLicenseScan [$allowLicenseScan]"
 
 						$fileBytes = [System.IO.File]::ReadAllBytes($filePath)
-						$fileContent = [System.Text.Encoding]::GetEncoding(\'iso-8859-1\').GetString($fileBytes)
 						$fileSize = $fileBytes.Length
 						Write-Host "File Size: $fileSize bytes"
+						
+						$boundary = [System.Guid]::NewGuid().ToString()
 						$LF = "`r`n"
-						$bodyLines = (
-							"--$boundary",
-							"Content-Disposition: form-data; name=`"name`"$LF",
-							"$projectName",
-							"--$boundary",
-							"Content-Disposition: form-data; name=`"projectId`"$LF",
-							"$projectId",
-							"--$boundary",
-							"Content-Disposition: form-data; name=`"keepInvisibleAndDeletePostScan`"$LF",
-							"false",
-							"--$boundary",
-							"Content-Disposition: form-data; name=`"allowDependencyScan`"$LF",
-							"$allowDependencyScan",
-							"--$boundary",
-							"Content-Disposition: form-data; name=`"allowMalwareScan`"$LF",
-							"$allowMalwareScan",
-							"--$boundary",
-							"Content-Disposition: form-data; name=`"allowLicenseScan`"$LF",
-							"$allowLicenseScan",
-							"--$boundary",
-							"Content-Disposition: form-data; name=`"externalScanSourceType`"$LF",
-							"Jenkins",
-							"--$boundary",
-							"Content-Disposition: form-data; name=`"pipelineUrl`"$LF",
-							"$selfUrl",
-							"--$boundary",
-							"Content-Disposition: form-data; name=`"fileSource`"; filename=`"$projectName.zip`"",
-							"Content-Type: application/x-zip-compressed$LF",
-							$fileContent,
-							"--$boundary--$LF"
-						) -join $LF
-
-						$apiResponse = Invoke-RestMethod -Method Post -Uri ("{0}/app/api/externalScan" -f $env:Offensive360SastApi_BaseUrl.TrimEnd('/')) -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer $env:Offensive360SastApi_AccessToken"} -Body $bodyLines
+						
+						$bodyLines = @()
+						$bodyLines += "--$boundary"
+						$bodyLines += "Content-Disposition: form-data; name=`"name`"$LF"
+						$bodyLines += "$projectName"
+						$bodyLines += "--$boundary"
+						$bodyLines += "Content-Disposition: form-data; name=`"projectId`"$LF"
+						$bodyLines += "$projectId"
+						$bodyLines += "--$boundary"
+						$bodyLines += "Content-Disposition: form-data; name=`"keepInvisibleAndDeletePostScan`"$LF"
+						$bodyLines += "false"
+						$bodyLines += "--$boundary"
+						$bodyLines += "Content-Disposition: form-data; name=`"allowDependencyScan`"$LF"
+						$bodyLines += "$allowDependencyScan"
+						$bodyLines += "--$boundary"
+						$bodyLines += "Content-Disposition: form-data; name=`"allowMalwareScan`"$LF"
+						$bodyLines += "$allowMalwareScan"
+						$bodyLines += "--$boundary"
+						$bodyLines += "Content-Disposition: form-data; name=`"allowLicenseScan`"$LF"
+						$bodyLines += "$allowLicenseScan"
+						$bodyLines += "--$boundary"
+						$bodyLines += "Content-Disposition: form-data; name=`"externalScanSourceType`"$LF"
+						$bodyLines += "Jenkins"
+						$bodyLines += "--$boundary"
+						$bodyLines += "Content-Disposition: form-data; name=`"pipelineUrl`"$LF"
+						$bodyLines += "$selfUrl"
+						$bodyLines += "--$boundary"
+						$bodyLines += "Content-Disposition: form-data; name=`"fileSource`"; filename=`"$projectName.zip`""
+						$bodyLines += "Content-Type: application/x-zip-compressed$LF"
+						
+						# Convert the bodyLines to bytes
+						$bodyBytes = [System.Text.Encoding]::UTF8.GetBytes(($bodyLines -join $LF))
+						
+						# Combine body bytes with file bytes
+						$fullRequest = New-Object System.IO.MemoryStream
+						$fullRequest.Write($bodyBytes, 0, $bodyBytes.Length)
+						$fullRequest.Write($fileBytes, 0, $fileBytes.Length)
+						$fullRequest.Write([System.Text.Encoding]::UTF8.GetBytes("`r`n--$boundary--`r`n"), 0, 0)
+						
+						$apiResponse = Invoke-RestMethod -Method Post -Uri ("{0}/app/api/externalScan" -f $env:Offensive360SastApi_BaseUrl.TrimEnd('/')) `
+						    -ContentType "multipart/form-data; boundary=`"$boundary`"" `
+						    -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer $env:Offensive360SastApi_AccessToken"} `
+						    -Body $fullRequest.ToArray()
 
 						write-host ("Total Vulnerabilities Count : {0}" -f $apiResponse.vulnerabilities.length)
 						write-host ("Total Malwares Count : {0}" -f $apiResponse.malwares.length)
