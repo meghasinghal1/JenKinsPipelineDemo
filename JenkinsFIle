@@ -41,8 +41,9 @@ pipeline {
                     def boundary = UUID.randomUUID().toString()
 
                     echo "Starting scanning for project name [$projectName]..."
-
+                    echo "a00000000000..."
                     def fileBytes = readFile(filePath).bytes
+                    echo "a11111111111111..."
                     def fileContent = new String(fileBytes, 'ISO-8859-1')
 
                     echo "aaaaaaaaaaa..."
