@@ -18,7 +18,8 @@ pipeline {
                     }
 
                     try {
-                        sh "zip -r ${destinationPath} ${sourcePath}"
+                        // Use Windows command to create ZIP file
+                        bat "powershell Compress-Archive -Path ${sourcePath} -DestinationPath ${destinationPath}"
                         echo "ZIP file created successfully."
                     } catch (Exception e) {
                         error("Failed to create ZIP file: ${e.message}")
