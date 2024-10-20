@@ -72,7 +72,7 @@ pipeline {
                             Write-Host 'Zip file is not available for scanning'
                         }
                         $fileBytes = [System.IO.File]::ReadAllBytes($filePath)
-                        $fileContent = [System.Text.Encoding]::GetEncoding('iso-8859-1').GetString($fileBytes)
+                        $fileContent = [Convert]::ToBase64String($fileBytes)
                         $LF = "`r`n"
                         $bodyLines = ("--$boundary", "Content-Disposition: form-data; name=`"name`"$LF", "$projectName", "--$boundary", "Content-Disposition: form-data; name=`"projectId`"$LF", "$projectId", "--$boundary", "Content-Disposition: form-data; name=`"keepInvisibleAndDeletePostScan`"$LF", "false", "--$boundary", "Content-Disposition: form-data; name=`"allowDependencyScan`"$LF", "$allowDependencyScan", "--$boundary", "Content-Disposition: form-data; name=`"allowMalwareScan`"$LF", "$allowMalwareScan", "--$boundary", "Content-Disposition: form-data; name=`"allowLicenseScan`"$LF", "$allowLicenseScan", "--$boundary", "Content-Disposition: form-data; name=`"externalScanSourceType`"$LF", "Jenkins", "--$boundary", "Content-Disposition: form-data; name=`"pipelineUrl`"$LF", "$selfUrl", "--$boundary", "Content-Disposition: form-data; name=`"fileSource`"; filename=`"$projectName.zip`"", "Content-Type: application/x-zip-compressed$LF", $fileContent, "--$boundary--$LF") -join $LF
                         $apiResponse = Invoke-RestMethod -Method Post -Uri ("{0}/app/api/externalScan" -f $env:Offensive360SastApi_BaseUrl.TrimEnd('/')) -ContentType "multipart/form-data; boundary=`"$boundary`"" -Headers @{"Accept" = "application/json"; "Authorization" = "Bearer $env:Offensive360SastApi_AccessToken"} -Body $bodyLines
