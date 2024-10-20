@@ -7,7 +7,7 @@ pipeline {
                 script {
                     // Define the source and destination paths
                     def sourcePath = env.WORKSPACE
-                    def destinationPath = "${env.WORKSPACE}/${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
+                    def destinationPath = "${env.WORKSPACE}\\${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
                     
                     echo "Source Path: ${sourcePath}"
                     echo "Destination Path: ${destinationPath}"
