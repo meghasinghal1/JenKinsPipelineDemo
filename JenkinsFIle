@@ -22,7 +22,7 @@ pipeline {
 
                     // Create ZIP file
                     try {
-                        zip zipFile: "${env.JOB_NAME}-${env.BUILD_NUMBER}.zip", archive: true, dir: sourcePath
+                        sh "cd ${sourcePath} && zip -r ${destinationPath} ."
                         echo "ZIP file created successfully."
                     } catch (Exception e) {
                         error("Failed to create ZIP file: ${e.message}")
