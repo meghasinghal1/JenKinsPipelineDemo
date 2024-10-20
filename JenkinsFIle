@@ -14,23 +14,25 @@ pipeline {
 
                     // Remove the destination file if it exists
                     if (fileExists(destinationPath)) {
-                        echo "x=============="
+                        echo "Removing existing ZIP file."
                         deleteFile(destinationPath)
-                    }
-                    else
-                    {
-                        echo "y=============="
+                    } else {
+                        echo "No existing ZIP file to remove."
                     }
 
                     // Create ZIP file
-                    zip zipFile: destinationPath, archive: true, dir: sourcePath
-
-                    if (fileExists(destinationPath)) {
-                        echo "u=============="
+                    try {
+                        zip zipFile: "${env.JOB_NAME}-${env.BUILD_NUMBER}.zip", archive: true, dir: sourcePath
+                        echo "ZIP file created successfully."
+                    } catch (Exception e) {
+                        error("Failed to create ZIP file: ${e.message}")
                     }
-                    else
-                    {
-                        echo "v=============="
+
+                    // Verify if the ZIP file was created
+                    if (fileExists(destinationPath)) {
+                        echo "ZIP file is present."
+                    } else {
+                        echo "ZIP file was not created."
                     }
                 }
             }
