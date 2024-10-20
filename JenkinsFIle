@@ -22,7 +22,8 @@ pipeline {
 
                     // Create ZIP file
                     try {
-                        sh "cd ${sourcePath} && zip -r ${destinationPath} ."
+                        //sh "cd ${sourcePath} && zip -r ${destinationPath} ."
+                        zip zipFile: destinationPath, archive: true, dir: sourcePath, overwrite: true
                         echo "ZIP file created successfully."
                     } catch (Exception e) {
                         error("Failed to create ZIP file: ${e.message}")
