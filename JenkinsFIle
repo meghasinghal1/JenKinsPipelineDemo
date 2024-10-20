@@ -2,17 +2,16 @@ pipeline {
     agent any
 
     stages {
+        {
         stage('zipRepo') {
             steps {
                 script {
-                    // Define the source and destination paths
                     def sourcePath = env.WORKSPACE
-                    def destinationPath = "${env.WORKSPACE}\\${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
-                    
+                    def destinationPath = "${env.WORKSPACE}/${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
+
                     echo "Source Path: ${sourcePath}"
                     echo "Destination Path: ${destinationPath}"
 
-                    // Remove the destination file if it exists
                     if (fileExists(destinationPath)) {
                         echo "Removing existing ZIP file."
                         deleteFile(destinationPath)
@@ -20,16 +19,13 @@ pipeline {
                         echo "No existing ZIP file to remove."
                     }
 
-                    // Create ZIP file
                     try {
-                        //sh "cd ${sourcePath} && zip -r ${destinationPath} ."
-                        zip zipFile: destinationPath, archive: true, dir: sourcePath, overwrite: true
+                        sh "zip -r ${destinationPath} ${sourcePath}"
                         echo "ZIP file created successfully."
                     } catch (Exception e) {
                         error("Failed to create ZIP file: ${e.message}")
                     }
 
-                    // Verify if the ZIP file was created
                     if (fileExists(destinationPath)) {
                         echo "ZIP file is present."
                     } else {
