@@ -45,6 +45,8 @@ pipeline {
                     def fileBytes = readFile(filePath).bytes
                     def fileContent = new String(fileBytes, 'ISO-8859-1')
 
+                    echo "aaaaaaaaaaa..."
+
                     def bodyLines = [
                         "--$boundary",
                         "Content-Disposition: form-data; name=\"name\"",
@@ -76,7 +78,7 @@ pipeline {
                         fileContent,
                         "--$boundary--"
                     ].join("\r\n")
-
+                    echo "bbbbbbbbbb..."
                     // Send the HTTP request
                     def response = httpRequest(
                         url: "${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan",
@@ -87,8 +89,9 @@ pipeline {
                             [name: 'Accept', value: 'application/json']
                         ]
                     )
-
+                    echo "ccccccccccc..."
                     def jsonResponse = readJSON(text: response.content)
+                    echo "dddddddddddd..."
                     echo "Total Vulnerabilities Count: ${jsonResponse.vulnerabilities.size()}"
                     echo "Total Malwares Count: ${jsonResponse.malwares.size()}"
                     echo "Total Licenses Count: ${jsonResponse.licenses.size()}"
