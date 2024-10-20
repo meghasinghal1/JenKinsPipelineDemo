@@ -14,11 +14,24 @@ pipeline {
 
                     // Remove the destination file if it exists
                     if (fileExists(destinationPath)) {
+                        echo "x=============="
                         deleteFile(destinationPath)
+                    }
+                    else
+                    {
+                        echo "y=============="
                     }
 
                     // Create ZIP file
                     zip zipFile: destinationPath, archive: true, dir: sourcePath
+
+                    if (fileExists(destinationPath)) {
+                        echo "u=============="
+                    }
+                    else
+                    {
+                        echo "v=============="
+                    }
                 }
             }
         }
