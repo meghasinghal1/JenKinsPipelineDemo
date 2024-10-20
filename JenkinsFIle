@@ -92,6 +92,14 @@ pipeline {
 
 						Write-Host "Starting scanning for the project name [$projectName], url [$env:Offensive360SastApi_BaseUrl], buildId [$buildId], filePath [$filePath], boundary [$boundary], projectId [$env:Offensive360SastApi_ProjectId], AllowDependencyScan [$allowDependencyScan], AllowMalwareScan [$allowMalwareScan], AllowLicenseScan [$allowLicenseScan]"
 
+						if(Test-Path -Path $filePath -PathType Leaf)
+						{
+							Write-Host 'Zip file is available to scan'
+						}
+						else
+						{
+							Write-Host 'Zip file is not available for scanning'
+						}
 						$fileBytes = [System.IO.File]::ReadAllBytes($filePath)
 						$fileContent = [System.Text.Encoding]::GetEncoding(\'iso-8859-1\').GetString($fileBytes)
 
