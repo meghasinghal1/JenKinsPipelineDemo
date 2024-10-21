@@ -23,11 +23,9 @@ pipeline {
 
                     try {
                         if (isUnix()) {
-                            def zipCmd = "zip -r ${destinationPath} ${sourcePath}"
-                            sh zipCmd
+                            sh "zip -r ${destinationPath} ${sourcePath}"
                         } else {
-                            def zipCmd = "powershell Compress-Archive -Path ${sourcePath} -DestinationPath ${destinationPath}"
-                            bat zipCmd
+                            bat "powershell -Command \"Compress-Archive -Path ${sourcePath} -DestinationPath ${destinationPath}\""
                         }
                         echo "ZIP file created successfully."
                     } catch (Exception e) {
