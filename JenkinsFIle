@@ -6,7 +6,7 @@ pipeline {
                 script {
                     def sourcePath = env.WORKSPACE
                     def destinationPath = "${env.WORKSPACE}/${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
-
+                    
                     echo "Source Path: ${sourcePath}"
                     echo "Destination Path: ${destinationPath}"
 
@@ -23,9 +23,11 @@ pipeline {
 
                     try {
                         if (isUnix()) {
-                            sh "zip -r ${destinationPath} ${sourcePath}"
+                            def zipCmd = "zip -r ${destinationPath} ${sourcePath}"
+                            sh zipCmd
                         } else {
-                            bat "powershell Compress-Archive -Path ${sourcePath} -DestinationPath ${destinationPath}"
+                            def zipCmd = "powershell Compress-Archive -Path ${sourcePath} -DestinationPath ${destinationPath}"
+                            bat zipCmd
                         }
                         echo "ZIP file created successfully."
                     } catch (Exception e) {
