@@ -6,20 +6,19 @@ pipeline {
                 script {
                     def sourcePath = env.WORKSPACE
                     def destinationPath = "${env.WORKSPACE}/${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
-
+                    
                     echo "Source Path: ${sourcePath}"
                     echo "Destination Path: ${destinationPath}"
 
                     if (fileExists(destinationPath)) {
                         echo "Removing existing ZIP file."
-                        deleteFile(destinationPath)
+                        sh "rm ${destinationPath}"
                     } else {
                         echo "No existing ZIP file to remove."
                     }
 
                     try {
-                        // Use Windows command to create ZIP file
-                        bat "powershell Compress-Archive -Path ${sourcePath} -DestinationPath ${destinationPath}"
+                        sh "zip -r ${destinationPath} ${sourcePath}"
                         echo "ZIP file created successfully."
                     } catch (Exception e) {
                         error("Failed to create ZIP file: ${e.message}")
@@ -33,31 +32,24 @@ pipeline {
                 }
             }
         }
-		stage('uploadZip') {
+        stage('uploadZip') {
             steps {
                 script {
                     echo "Received scanning request successfully.."
-
                     def selfUrl = "${env.BUILD_URL}console"
                     def filePath = "${env.WORKSPACE}/${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
                     echo "File Path: ${filePath}"
-
                     def buildId = "${env.JOB_NAME}-${env.BUILD_NUMBER}"
                     def projectId = env.Offensive360SastApi_ProjectId ?: ''
                     def allowDependencyScan = env.Offensive360SastApi_AllowDependencyScan ?: 'false'
                     def allowMalwareScan = env.Offensive360SastApi_AllowMalwareScan ?: 'false'
                     def allowLicenseScan = env.Offensive360SastApi_AllowLicenseScan ?: 'false'
-
                     def projectName = buildId
                     def boundary = UUID.randomUUID().toString()
-
                     echo "Starting scanning for project name [$projectName]..."
-                    echo "a00000000000..."
-                    def fileBytes = readFile(filePath).bytes
-                    echo "a11111111111111..."
-                    def fileContent = new String(fileBytes, 'ISO-8859-1')
 
-                    echo "aaaaaaaaaaa..."
+                    def fileBytes = readFile(filePath).bytes
+                    def fileContent = new String(fileBytes, 'ISO-8859-1')
 
                     def bodyLines = [
                         "--$boundary",
@@ -90,8 +82,7 @@ pipeline {
                         fileContent,
                         "--$boundary--"
                     ].join("\r\n")
-                    echo "bbbbbbbbbb..."
-                    // Send the HTTP request
+
                     def response = httpRequest(
                         url: "${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan",
                         requestBody: bodyLines,
@@ -101,9 +92,9 @@ pipeline {
                             [name: 'Accept', value: 'application/json']
                         ]
                     )
-                    echo "ccccccccccc..."
+
                     def jsonResponse = readJSON(text: response.content)
-                    echo "dddddddddddd..."
+
                     echo "Total Vulnerabilities Count: ${jsonResponse.vulnerabilities.size()}"
                     echo "Total Malwares Count: ${jsonResponse.malwares.size()}"
                     echo "Total Licenses Count: ${jsonResponse.licenses.size()}"
