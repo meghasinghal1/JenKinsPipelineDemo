@@ -57,8 +57,9 @@ pipeline {
                     echo "Starting scanning for project name [$projectName]..."
 
                     def fileBytes = readFile(filePath).bytes
+                    echo "aaaaaaaaaaa..."
                     def fileContent = new String(fileBytes, 'ISO-8859-1')
-
+                    echo "bbbbbbbb..."
                     def bodyLines = [
                         "--$boundary",
                         "Content-Disposition: form-data; name=\"name\"",
@@ -90,7 +91,7 @@ pipeline {
                         fileContent,
                         "--$boundary--"
                     ].join("\r\n")
-
+                    echo "cccccccccc..."
                     def response = httpRequest(
                         url: "${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan",
                         requestBody: bodyLines,
@@ -100,7 +101,7 @@ pipeline {
                             [name: 'Accept', value: 'application/json']
                         ]
                     )
-
+                    echo "ddddddddddd..."
                     def jsonResponse = readJSON(text: response.content)
 
                     echo "Total Vulnerabilities Count: ${jsonResponse.vulnerabilities.size()}"
