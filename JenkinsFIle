@@ -56,42 +56,42 @@ pipeline {
                     def boundary = UUID.randomUUID().toString()
                     echo "Starting scanning for project name [$projectName]..."
 
-                    // Ensure all variables are properly defined and available
                     def fileBytes = readFile(filePath).bytes
+                    echo "aaaaaaaaaaa..."
                     def fileContent = new String(fileBytes, 'ISO-8859-1')
-
+                    echo "bbbbbbbb..."
                     def bodyLines = [
-                        "--$boundary",
+                        "--${boundary}",
                         "Content-Disposition: form-data; name=\"name\"",
                         projectName,
-                        "--$boundary",
+                        "--${boundary}",
                         "Content-Disposition: form-data; name=\"projectId\"",
                         projectId,
-                        "--$boundary",
+                        "--${boundary}",
                         "Content-Disposition: form-data; name=\"keepInvisibleAndDeletePostScan\"",
                         "false",
-                        "--$boundary",
+                        "--${boundary}",
                         "Content-Disposition: form-data; name=\"allowDependencyScan\"",
                         allowDependencyScan,
-                        "--$boundary",
+                        "--${boundary}",
                         "Content-Disposition: form-data; name=\"allowMalwareScan\"",
                         allowMalwareScan,
-                        "--$boundary",
+                        "--${boundary}",
                         "Content-Disposition: form-data; name=\"allowLicenseScan\"",
                         allowLicenseScan,
-                        "--$boundary",
+                        "--${boundary}",
                         "Content-Disposition: form-data; name=\"externalScanSourceType\"",
                         "Jenkins",
-                        "--$boundary",
+                        "--${boundary}",
                         "Content-Disposition: form-data; name=\"pipelineUrl\"",
                         selfUrl,
-                        "--$boundary",
+                        "--${boundary}",
                         "Content-Disposition: form-data; name=\"fileSource\"; filename=\"${projectName}.zip\"",
                         "Content-Type: application/x-zip-compressed",
                         fileContent,
-                        "--$boundary--"
+                        "--${boundary}--"
                     ].join("\r\n")
-
+                    echo "cccccccccc..."
                     def response = httpRequest(
                         url: "${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan",
                         requestBody: bodyLines,
@@ -101,7 +101,7 @@ pipeline {
                             [name: 'Accept', value: 'application/json']
                         ]
                     )
-
+                    echo "ddddddddddd..."
                     def jsonResponse = readJSON(text: response.content)
 
                     echo "Total Vulnerabilities Count: ${jsonResponse.vulnerabilities.size()}"
@@ -121,3 +121,12 @@ pipeline {
 
                     echo "Finished SAST file scanning."
 
+                    // Remove the zip file after upload
+                    if (fileExists(filePath)) {
+                        deleteFile(filePath)
+                    }
+                }
+            }
+        }
+    }
+}
