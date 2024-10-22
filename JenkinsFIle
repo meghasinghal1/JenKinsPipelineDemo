@@ -92,15 +92,43 @@ pipeline {
                         "--${boundary}--"
                     ].join("\r\n")
                     echo "cccccccccc..."
-                    def response = httpRequest(
-                        url: "${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan",
-                        requestBody: bodyLines,
-                        contentType: 'MULTIPART',
-                        customHeaders: [
-                            [name: 'Authorization', value: "Bearer ${env.Offensive360SastApi_AccessToken}"],
-                            [name: 'Accept', value: 'application/json']
-                        ]
-                    )
+     
+                    def post = new URL("${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan").openConnection();
+                    def message = '{"message":"this is a message"}'
+                    post.setRequestMethod("POST")
+                    post.setDoOutput(true)
+                    post.setRequestProperty('Content-Type', "multipart/form-data; boundary=${boundary}")
+                    post.setRequestProperty('Authorization', "Bearer ${env.Offensive360SastApi_AccessToken}")
+                    post.setRequestProperty('Accept', 'application/json')
+                    
+                    def boundary = "--boundary\r\n"
+                    def newLine = "\r\n"
+                    def outputStream = connection.outputStream
+                
+                    // Add bodyLines as part of the request
+                    bodyLines.each { line ->
+                        outputStream.write(boundary.getBytes())
+                        outputStream.write("Content-Disposition: form-data; name=\"file\"\r\n".getBytes())
+                        outputStream.write(newLine.getBytes())
+                        outputStream.write(line.getBytes())
+                        outputStream.write(newLine.getBytes())
+                    }
+                    outputStream.write((boundary + "--").getBytes())
+                    outputStream.close()
+                
+                    // Get response
+                    int responseCode = connection.responseCode
+                    println "Response Code: ${responseCode}"
+                
+                    def jsonResponse = [:]
+                    if (responseCode == HttpURLConnection.HTTP_OK) {
+                        JsonReader jsonReader = Json.createReader(connection.inputStream)
+                        jsonResponse = jsonReader.readObject()
+                        jsonReader.close()
+                    }
+                
+                    connection.disconnect()
+
                     echo "ddddddddddd..."
                     def jsonResponse = readJSON(text: response.content)
 
