@@ -53,46 +53,14 @@ pipeline {
                     def allowMalwareScan = env.Offensive360SastApi_AllowMalwareScan ?: 'false'
                     def allowLicenseScan = env.Offensive360SastApi_AllowLicenseScan ?: 'false'
                     def projectName = buildId
-                    def boundary = UUID.randomUUID().toString()
+
                     echo "Starting scanning for project name [$projectName]..."
 
                     def fileBytes = readFile(filePath).bytes
                     echo "aaaaaaaaaaa..."
                     def fileContent = new String(fileBytes, 'ISO-8859-1')
                     echo "bbbbbbbb..."
-                    def bodyLines = [
-                        "--${boundary}",
-                        "Content-Disposition: form-data; name=\"name\"",
-                        projectName,
-                        "--${boundary}",
-                        "Content-Disposition: form-data; name=\"projectId\"",
-                        projectId,
-                        "--${boundary}",
-                        "Content-Disposition: form-data; name=\"keepInvisibleAndDeletePostScan\"",
-                        "false",
-                        "--${boundary}",
-                        "Content-Disposition: form-data; name=\"allowDependencyScan\"",
-                        allowDependencyScan,
-                        "--${boundary}",
-                        "Content-Disposition: form-data; name=\"allowMalwareScan\"",
-                        allowMalwareScan,
-                        "--${boundary}",
-                        "Content-Disposition: form-data; name=\"allowLicenseScan\"",
-                        allowLicenseScan,
-                        "--${boundary}",
-                        "Content-Disposition: form-data; name=\"externalScanSourceType\"",
-                        "Jenkins",
-                        "--${boundary}",
-                        "Content-Disposition: form-data; name=\"pipelineUrl\"",
-                        selfUrl,
-                        "--${boundary}",
-                        "Content-Disposition: form-data; name=\"fileSource\"; filename=\"${projectName}.zip\"",
-                        "Content-Type: application/x-zip-compressed",
-                        fileContent,
-                        "--${boundary}--"
-                    ].join("\r\n")
-                    echo "cccccccccc..."
-     
+                    
                     def post = new URL("${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan").openConnection();
                     def message = '{"message":"this is a message"}'
                     post.setRequestMethod("POST")
