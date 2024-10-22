@@ -68,11 +68,11 @@ pipeline {
                     post.setRequestProperty('Content-Type', "multipart/form-data; boundary=${boundary}")
                     post.setRequestProperty('Authorization', "Bearer ${env.Offensive360SastApi_AccessToken}")
                     post.setRequestProperty('Accept', 'application/json')
-                    
+                    echo "cccccccccc..."
                     def boundary = "--boundary\r\n"
                     def newLine = "\r\n"
                     def outputStream = connection.outputStream
-                
+                    echo "ddddddddd..."
                     // Add bodyLines as part of the request
                     bodyLines.each { line ->
                         outputStream.write(boundary.getBytes())
@@ -83,21 +83,15 @@ pipeline {
                     }
                     outputStream.write((boundary + "--").getBytes())
                     outputStream.close()
-                
+                    echo "eeeeeee..."
                     // Get response
                     int responseCode = connection.responseCode
                     println "Response Code: ${responseCode}"
-                
-                    def jsonResponse = [:]
-                    if (responseCode == HttpURLConnection.HTTP_OK) {
-                        JsonReader jsonReader = Json.createReader(connection.inputStream)
-                        jsonResponse = jsonReader.readObject()
-                        jsonReader.close()
-                    }
-                
+                    echo "ffffffffff..."
+                    
                     connection.disconnect()
 
-                    echo "ddddddddddd..."
+                    echo "ggggggggggg..."
                     
 
                     echo "Total Vulnerabilities Count: ${jsonResponse.vulnerabilities.size()}"
