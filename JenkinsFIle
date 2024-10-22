@@ -60,13 +60,13 @@ pipeline {
                     echo "aaaaaaaaaaa..."
                     def fileContent = new String(fileBytes, 'ISO-8859-1')
                     echo "bbbbbbbb..."
-                    def boundary = "--boundary\r\n"
+                    def boundary = UUID.randomUUID().toString()
 
                     def post = new URL("${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan").openConnection();
                     echo "b111111111..."
                     post.setRequestMethod("POST")
                     post.setDoOutput(true)
-                    post.setRequestProperty('Content-Type', "multipart/form-data; boundary=${boundary}")
+                    conn.setRequestProperty('Content-Type', "multipart/form-data; boundary=${boundary}"
                     post.setRequestProperty('Authorization', "Bearer ${env.Offensive360SastApi_AccessToken}")
                     post.setRequestProperty('Accept', 'application/json')
                     echo "cccccccccc..."
@@ -76,7 +76,7 @@ pipeline {
                     echo "ddddddddd..."
                     // Add bodyLines as part of the request
                     bodyLines.each { line ->
-                        outputStream.write(boundary.getBytes())
+                        outputStream.write("--${boundary}\r\n")
                         outputStream.write("Content-Disposition: form-data; name=\"file\"\r\n".getBytes())
                         outputStream.write(newLine.getBytes())
                         outputStream.write(line.getBytes())
