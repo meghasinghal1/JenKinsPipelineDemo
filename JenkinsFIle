@@ -72,7 +72,7 @@ pipeline {
                     echo "cccccccccc..."
                     
                     def newLine = "\r\n"
-                    def outputStream = connection.outputStream
+                    def outputStream = post.outputStream
                     echo "ddddddddd..."
                     // Add bodyLines as part of the request
                     bodyLines.each { line ->
