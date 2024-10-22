@@ -47,45 +47,30 @@ pipeline {
                     def filePath = "${env.WORKSPACE}/${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
                     def boundary = UUID.randomUUID().toString()
                     
-                    // Create temporary file to hold the multipart form data
-                    def tempFile = new File("${env.WORKSPACE}/tempfile.txt")
-                    tempFile.withWriter('UTF-8') { writer ->
-                        writer << "--${boundary}\r\n"
-                        writer << "Content-Disposition: form-data; name=\"file\"; filename=\"${env.JOB_NAME}-${env.BUILD_NUMBER}.zip\"\r\n"
-                        writer << "Content-Type: application/zip\r\n\r\n"
-                        writer.flush()
-                        writer.write(new String(readFile(filePath).bytes))
-                        writer.flush()
-                        writer << "\r\n--${boundary}--\r\n"
-                    }
+                    // Create multipart form-data content
+                    def formData = "--${boundary}\r\n" +
+                                   "Content-Disposition: form-data; name=\"file\"; filename=\"${env.JOB_NAME}-${env.BUILD_NUMBER}.zip\"\r\n" +
+                                   "Content-Type: application/zip\r\n\r\n" +
+                                   readFile(filePath).bytes.encodeBase64().toString() +
+                                   "\r\n--${boundary}--\r\n"
+                    
+                    // Write form-data content to a temporary file
+                    def tempFilePath = "${env.WORKSPACE}/tempfile.txt"
+                    writeFile file: tempFilePath, text: formData
 
-                    def postRequest = { 
-                        HttpURLConnection conn = new URL("${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan").openConnection()
-                        conn.doOutput = true
-                        conn.requestMethod = 'POST'
-                        conn.setRequestProperty('Content-Type', "multipart/form-data; boundary=${boundary}")
-                        conn.setRequestProperty('Authorization', "Bearer ${env.Offensive360SastApi_AccessToken}")
-                        conn.setRequestProperty('Accept', 'application/json')
-
-                        conn.outputStream.withStream { output ->
-                            tempFile.eachLine { line ->
-                                output.write(line.bytes)
-                            }
-                        }
-
-                        if (conn.responseCode != HttpURLConnection.HTTP_OK) {
-                            throw new IOException("Failed to upload file: ${conn.responseMessage}")
-                        }
-                        
-                        def jsonResponse = new groovy.json.JsonSlurper().parse(conn.inputStream)
-                        return jsonResponse
-                    }
-
-                    def response = postRequest()
-                    echo "Response from server: ${response}"
+                    // Perform the HTTP request
+                    sh """
+                    curl -X POST -H "Content-Type: multipart/form-data; boundary=${boundary}" \
+                         -H "Authorization: Bearer ${env.Offensive360SastApi_AccessToken}" \
+                         -H "Accept: application/json" \
+                         --data-binary @${tempFilePath} \
+                         ${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan
+                    """
 
                     // Clean up temporary file
-                    tempFile.delete()
+                    if (fileExists(tempFilePath)) {
+                        deleteFile(tempFilePath)
+                    }
                 }
             }
         }
