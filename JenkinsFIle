@@ -55,14 +55,13 @@ pipeline {
                     post.setRequestProperty('Accept', 'application/json')
 
                     // Write the file to the output stream
-                    def newLine = "\r\n"
-                    post.outputStream.withWriter { writer ->
-                        writer.write("--${boundary}${newLine}")
-                        writer.write("Content-Disposition: form-data; name=\"file\"; filename=\"${filePath}\"${newLine}")
-                        writer.write("Content-Type: application/zip${newLine}${newLine}")
-                        writer.write(readFile(filePath).bytes as String)
-                        writer.write("${newLine}--${boundary}--${newLine}")
-                    }
+                    def outputStream = post.outputStream
+                    outputStream.write("--${boundary}\r\n".getBytes())
+                    outputStream.write("Content-Disposition: form-data; name=\"file\"; filename=\"${filePath}\"\r\n".getBytes())
+                    outputStream.write("Content-Type: application/zip\r\n\r\n".getBytes())
+                    outputStream.write(readFile(filePath).bytes)
+                    outputStream.write("\r\n--${boundary}--\r\n".getBytes())
+                    outputStream.close()
 
                     // Get response
                     int responseCode = post.responseCode
