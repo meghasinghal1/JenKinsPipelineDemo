@@ -60,16 +60,17 @@ pipeline {
                     echo "aaaaaaaaaaa..."
                     def fileContent = new String(fileBytes, 'ISO-8859-1')
                     echo "bbbbbbbb..."
-                    
+                    def boundary = "--boundary\r\n"
+
                     def post = new URL("${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan").openConnection();
-                    def message = '{"message":"this is a message"}'
+                    echo "b111111111..."
                     post.setRequestMethod("POST")
                     post.setDoOutput(true)
                     post.setRequestProperty('Content-Type', "multipart/form-data; boundary=${boundary}")
                     post.setRequestProperty('Authorization', "Bearer ${env.Offensive360SastApi_AccessToken}")
                     post.setRequestProperty('Accept', 'application/json')
                     echo "cccccccccc..."
-                    def boundary = "--boundary\r\n"
+                    
                     def newLine = "\r\n"
                     def outputStream = connection.outputStream
                     echo "ddddddddd..."
