@@ -41,71 +41,58 @@ pipeline {
             }
         }
         stage('uploadZip') {
-    steps {
-        script {
-            echo "Received scanning request successfully.."
-            def selfUrl = "${env.BUILD_URL}console"
-            def filePath = "${env.WORKSPACE}/${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
-            echo "File Path: ${filePath}"
-            def buildId = "${env.JOB_NAME}-${env.BUILD_NUMBER}"
-            def projectId = env.Offensive360SastApi_ProjectId ?: ''
-            def allowDependencyScan = env.Offensive360SastApi_AllowDependencyScan ?: 'false'
-            def allowMalwareScan = env.Offensive360SastApi_AllowMalwareScan ?: 'false'
-            def allowLicenseScan = env.Offensive360SastApi_AllowLicenseScan ?: 'false'
-            def projectName = buildId
+            steps {
+                script {
+                    echo "Received scanning request successfully.."
+                    def filePath = "${env.WORKSPACE}/${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
+                    def boundary = UUID.randomUUID().toString()
 
-            echo "Starting scanning for project name [$projectName]..."
+                    def post = new URL("${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan").openConnection()
+                    post.setRequestMethod("POST")
+                    post.setDoOutput(true)
+                    post.setRequestProperty('Content-Type', "multipart/form-data; boundary=${boundary}")
+                    post.setRequestProperty('Authorization', "Bearer ${env.Offensive360SastApi_AccessToken}")
+                    post.setRequestProperty('Accept', 'application/json')
 
-            def boundary = UUID.randomUUID().toString()
+                    // Write the file to the output stream
+                    def newLine = "\r\n"
+                    post.outputStream.withWriter { writer ->
+                        writer.write("--${boundary}${newLine}")
+                        writer.write("Content-Disposition: form-data; name=\"file\"; filename=\"${filePath}\"${newLine}")
+                        writer.write("Content-Type: application/zip${newLine}${newLine}")
+                        writer.write(readFile(filePath).bytes as String)
+                        writer.write("${newLine}--${boundary}--${newLine}")
+                    }
 
-            def post = new URL("${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan").openConnection()
-            post.setRequestMethod("POST")
-            post.setDoOutput(true)
-            post.setRequestProperty('Content-Type', "multipart/form-data; boundary=${boundary}")
-            post.setRequestProperty('Authorization', "Bearer ${env.Offensive360SastApi_AccessToken}")
-            post.setRequestProperty('Accept', 'application/json')
+                    // Get response
+                    int responseCode = post.responseCode
+                    println "Response Code: ${responseCode}"
 
-            def newLine = "\r\n"
-            def outputStream = post.outputStream
-            
-            // Write the file to the output stream
-            outputStream.write("--${boundary}${newLine}".getBytes())
-            outputStream.write("Content-Disposition: form-data; name=\"file\"; filename=\"${filePath}\"${newLine}".getBytes())
-            outputStream.write("Content-Type: application/zip${newLine}${newLine}".getBytes())
-            outputStream.write(readFile(filePath).bytes)
-            outputStream.write("${newLine}--${boundary}--${newLine}".getBytes())
-            outputStream.close()
+                    // Read and parse the response
+                    def jsonResponse = new groovy.json.JsonSlurper().parse(post.inputStream)
+                    echo "Total Vulnerabilities Count: ${jsonResponse.vulnerabilities.size()}"
+                    echo "Total Malwares Count: ${jsonResponse.malwares.size()}"
+                    echo "Total Licenses Count: ${jsonResponse.licenses.size()}"
+                    echo "Total Dependency Vulnerabilities Count: ${jsonResponse.dependencyVulnerabilities.size()}"
 
-            // Get response
-            int responseCode = post.responseCode
-            println "Response Code: ${responseCode}"
+                    if ((jsonResponse.vulnerabilities.size() > 0 || jsonResponse.malwares.size() > 0 ||
+                         jsonResponse.licenses.size() > 0 || jsonResponse.dependencyVulnerabilities.size() > 0) &&
+                        env.Pipeline_BreakBuildWhenVulnsFound == 'True') {
+                        error("Vulnerabilities found and breaking the build.")
+                    } else if (jsonResponse.vulnerabilities.size() > 0) {
+                        warning("Vulnerabilities found but continuing the build as per configuration.")
+                    } else {
+                        warning("No vulnerabilities found, continuing the build.")
+                    }
 
-            // Assuming you want to parse the JSON response
-            def jsonResponse = new groovy.json.JsonSlurper().parse(post.inputStream)
-            echo "Total Vulnerabilities Count: ${jsonResponse.vulnerabilities.size()}"
-            echo "Total Malwares Count: ${jsonResponse.malwares.size()}"
-            echo "Total Licenses Count: ${jsonResponse.licenses.size()}"
-            echo "Total Dependency Vulnerabilities Count: ${jsonResponse.dependencyVulnerabilities.size()}"
+                    echo "Finished SAST file scanning."
 
-            if ((jsonResponse.vulnerabilities.size() > 0 || jsonResponse.malwares.size() > 0 ||
-                 jsonResponse.licenses.size() > 0 || jsonResponse.dependencyVulnerabilities.size() > 0) &&
-                env.Pipeline_BreakBuildWhenVulnsFound == 'True') {
-                error("Vulnerabilities found and breaking the build.")
-            } else if (jsonResponse.vulnerabilities.size() > 0) {
-                warning("Vulnerabilities found but continuing the build as per configuration.")
-            } else {
-                warning("No vulnerabilities found, continuing the build.")
-            }
-
-            echo "Finished SAST file scanning."
-
-            // Remove the zip file after upload
-            if (fileExists(filePath)) {
-                deleteFile(filePath)
+                    // Remove the zip file after upload
+                    if (fileExists(filePath)) {
+                        deleteFile(filePath)
+                    }
+                }
             }
         }
-    }
-}
-
     }
 }
