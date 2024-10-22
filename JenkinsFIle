@@ -46,50 +46,46 @@ pipeline {
                     echo "Received scanning request successfully.."
                     def filePath = "${env.WORKSPACE}/${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
                     def boundary = UUID.randomUUID().toString()
-
-                    def post = new URL("${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan").openConnection()
-                    post.setRequestMethod("POST")
-                    post.setDoOutput(true)
-                    post.setRequestProperty('Content-Type', "multipart/form-data; boundary=${boundary}")
-                    post.setRequestProperty('Authorization', "Bearer ${env.Offensive360SastApi_AccessToken}")
-                    post.setRequestProperty('Accept', 'application/json')
-
-                    // Write the file to the output stream
-                    def outputStream = post.outputStream
-                    outputStream.write("--${boundary}\r\n".getBytes())
-                    outputStream.write("Content-Disposition: form-data; name=\"file\"; filename=\"${filePath}\"\r\n".getBytes())
-                    outputStream.write("Content-Type: application/zip\r\n\r\n".getBytes())
-                    outputStream.write(readFile(filePath).bytes)
-                    outputStream.write("\r\n--${boundary}--\r\n".getBytes())
-                    outputStream.close()
-
-                    // Get response
-                    int responseCode = post.responseCode
-                    println "Response Code: ${responseCode}"
-
-                    // Read and parse the response
-                    def jsonResponse = new groovy.json.JsonSlurper().parse(post.inputStream)
-                    echo "Total Vulnerabilities Count: ${jsonResponse.vulnerabilities.size()}"
-                    echo "Total Malwares Count: ${jsonResponse.malwares.size()}"
-                    echo "Total Licenses Count: ${jsonResponse.licenses.size()}"
-                    echo "Total Dependency Vulnerabilities Count: ${jsonResponse.dependencyVulnerabilities.size()}"
-
-                    if ((jsonResponse.vulnerabilities.size() > 0 || jsonResponse.malwares.size() > 0 ||
-                         jsonResponse.licenses.size() > 0 || jsonResponse.dependencyVulnerabilities.size() > 0) &&
-                        env.Pipeline_BreakBuildWhenVulnsFound == 'True') {
-                        error("Vulnerabilities found and breaking the build.")
-                    } else if (jsonResponse.vulnerabilities.size() > 0) {
-                        warning("Vulnerabilities found but continuing the build as per configuration.")
-                    } else {
-                        warning("No vulnerabilities found, continuing the build.")
+                    
+                    // Create temporary file to hold the multipart form data
+                    def tempFile = new File("${env.WORKSPACE}/tempfile.txt")
+                    tempFile.withWriter('UTF-8') { writer ->
+                        writer << "--${boundary}\r\n"
+                        writer << "Content-Disposition: form-data; name=\"file\"; filename=\"${env.JOB_NAME}-${env.BUILD_NUMBER}.zip\"\r\n"
+                        writer << "Content-Type: application/zip\r\n\r\n"
+                        writer.flush()
+                        writer.write(new String(readFile(filePath).bytes))
+                        writer.flush()
+                        writer << "\r\n--${boundary}--\r\n"
                     }
 
-                    echo "Finished SAST file scanning."
+                    def postRequest = { 
+                        HttpURLConnection conn = new URL("${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan").openConnection()
+                        conn.doOutput = true
+                        conn.requestMethod = 'POST'
+                        conn.setRequestProperty('Content-Type', "multipart/form-data; boundary=${boundary}")
+                        conn.setRequestProperty('Authorization', "Bearer ${env.Offensive360SastApi_AccessToken}")
+                        conn.setRequestProperty('Accept', 'application/json')
 
-                    // Remove the zip file after upload
-                    if (fileExists(filePath)) {
-                        deleteFile(filePath)
+                        conn.outputStream.withStream { output ->
+                            tempFile.eachLine { line ->
+                                output.write(line.bytes)
+                            }
+                        }
+
+                        if (conn.responseCode != HttpURLConnection.HTTP_OK) {
+                            throw new IOException("Failed to upload file: ${conn.responseMessage}")
+                        }
+                        
+                        def jsonResponse = new groovy.json.JsonSlurper().parse(conn.inputStream)
+                        return jsonResponse
                     }
+
+                    def response = postRequest()
+                    echo "Response from server: ${response}"
+
+                    // Clean up temporary file
+                    tempFile.delete()
                 }
             }
         }
