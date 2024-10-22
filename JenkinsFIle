@@ -98,7 +98,7 @@ pipeline {
                     connection.disconnect()
 
                     echo "ddddddddddd..."
-                    def jsonResponse = readJSON(text: response.content)
+                    
 
                     echo "Total Vulnerabilities Count: ${jsonResponse.vulnerabilities.size()}"
                     echo "Total Malwares Count: ${jsonResponse.malwares.size()}"
