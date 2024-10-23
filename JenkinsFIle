@@ -1,6 +1,45 @@
 pipeline {
     agent any
     stages {
+        stage('zipRepo') {
+            steps {
+                script {
+                    def sourcePath = env.WORKSPACE
+                    def destinationPath = "${env.WORKSPACE}/${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
+                    
+                    echo "Source Path: ${sourcePath}"
+                    echo "Destination Path: ${destinationPath}"
+
+                    if (fileExists(destinationPath)) {
+                        echo "Removing existing ZIP file."
+                        if (isUnix()) {
+                            sh "rm ${destinationPath}"
+                        } else {
+                            bat "del ${destinationPath}"
+                        }
+                    } else {
+                        echo "No existing ZIP file to remove."
+                    }
+
+                    try {
+                        if (isUnix()) {
+                            sh "zip -r ${destinationPath} ${sourcePath}"
+                        } else {
+                            bat "powershell -Command \"Compress-Archive -Path ${sourcePath} -DestinationPath ${destinationPath}\""
+                        }
+                        echo "ZIP file created successfully."
+                    } catch (Exception e) {
+                        error("Failed to create ZIP file: ${e.message}")
+                    }
+
+                    if (fileExists(destinationPath)) {
+                        echo "ZIP file is present."
+                    } else {
+                        echo "ZIP file was not created."
+                    }
+                }
+            }
+        }
         stage('uploadZip') {
             steps {
                 script {
