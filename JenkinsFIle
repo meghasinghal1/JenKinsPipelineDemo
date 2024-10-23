@@ -62,8 +62,10 @@ pipeline {
 
                     // Stream the file directly to the output stream
                     def fileInputStream = new File(filePath).newInputStream()
-                    fileInputStream.withCloseable { fis ->
-                        fis.transferTo(outputStream)
+                    try {
+                        fileInputStream.transferTo(outputStream)
+                    } finally {
+                        fileInputStream.close()  // Ensure the input stream is closed
                     }
 
                     outputStream.write("\r\n--${boundary}--\r\n".getBytes())
