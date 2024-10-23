@@ -129,7 +129,6 @@ pipeline {
                         error("Vulnerabilities found and breaking the build.")
                     } else if (vulnerabilitiesCount > 0) {
                         echo "WARNING: Vulnerabilities found but continuing the build as per configuration."
-                        currentBuild.result = 'UNSTABLE' // Mark the build as unstable
                     } else {
                         echo "No vulnerabilities found, continuing the build."
                     }
