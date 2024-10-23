@@ -128,9 +128,10 @@ pipeline {
                         env.Pipeline_BreakBuildWhenVulnsFound == 'True') {
                         error("Vulnerabilities found and breaking the build.")
                     } else if (vulnerabilitiesCount > 0) {
-                        warning("Vulnerabilities found but continuing the build as per configuration.")
+                        echo "WARNING: Vulnerabilities found but continuing the build as per configuration."
+                        currentBuild.result = 'UNSTABLE' // Mark the build as unstable
                     } else {
-                        warning("No vulnerabilities found, continuing the build.")
+                        echo "No vulnerabilities found, continuing the build."
                     }
 
                     echo "Finished SAST file scanning."
