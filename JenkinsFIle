@@ -46,30 +46,54 @@ pipeline {
                     echo "Received scanning request successfully.."
                     def filePath = "${env.WORKSPACE}/${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
                     def boundary = UUID.randomUUID().toString()
-                    
-                    // Create multipart form-data content
-                    def formData = "--${boundary}\r\n" +
-                                   "Content-Disposition: form-data; name=\"file\"; filename=\"${env.JOB_NAME}-${env.BUILD_NUMBER}.zip\"\r\n" +
-                                   "Content-Type: application/zip\r\n\r\n" +
-                                   readFile(filePath).bytes.encodeBase64().toString() +
-                                   "\r\n--${boundary}--\r\n"
-                    
-                    // Write form-data content to a temporary file
-                    def tempFilePath = "${env.WORKSPACE}/tempfile.txt"
-                    writeFile file: tempFilePath, text: formData
 
-                    // Perform the HTTP request
-                    sh """
-                    curl -X POST -H "Content-Type: multipart/form-data; boundary=${boundary}" \
-                         -H "Authorization: Bearer ${env.Offensive360SastApi_AccessToken}" \
-                         -H "Accept: application/json" \
-                         --data-binary @${tempFilePath} \
-                         ${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan
-                    """
+                    def post = new URL("${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan").openConnection()
+                    post.setRequestMethod("POST")
+                    post.setDoOutput(true)
+                    post.setRequestProperty('Content-Type', "multipart/form-data; boundary=${boundary}")
+                    post.setRequestProperty('Authorization', "Bearer ${env.Offensive360SastApi_AccessToken}")
+                    post.setRequestProperty('Accept', 'application/json')
 
-                    // Clean up temporary file
-                    if (fileExists(tempFilePath)) {
-                        deleteFile(tempFilePath)
+                    // Write the file to the output stream using a stream
+                    def outputStream = post.outputStream
+                    outputStream.write("--${boundary}\r\n".getBytes())
+                    outputStream.write("Content-Disposition: form-data; name=\"file\"; filename=\"${filePath}\"\r\n".getBytes())
+                    outputStream.write("Content-Type: application/zip\r\n\r\n".getBytes())
+
+                    // Stream the file directly to the output stream
+                    new File(filePath).withInputStream { fileInputStream ->
+                        fileInputStream.transferTo(outputStream)
+                    }
+
+                    outputStream.write("\r\n--${boundary}--\r\n".getBytes())
+                    outputStream.close()
+
+                    // Get response
+                    int responseCode = post.responseCode
+                    println "Response Code: ${responseCode}"
+
+                    // Read and parse the response
+                    def jsonResponse = new groovy.json.JsonSlurper().parse(post.inputStream)
+                    echo "Total Vulnerabilities Count: ${jsonResponse.vulnerabilities.size()}"
+                    echo "Total Malwares Count: ${jsonResponse.malwares.size()}"
+                    echo "Total Licenses Count: ${jsonResponse.licenses.size()}"
+                    echo "Total Dependency Vulnerabilities Count: ${jsonResponse.dependencyVulnerabilities.size()}"
+
+                    if ((jsonResponse.vulnerabilities.size() > 0 || jsonResponse.malwares.size() > 0 ||
+                         jsonResponse.licenses.size() > 0 || jsonResponse.dependencyVulnerabilities.size() > 0) &&
+                        env.Pipeline_BreakBuildWhenVulnsFound == 'True') {
+                        error("Vulnerabilities found and breaking the build.")
+                    } else if (jsonResponse.vulnerabilities.size() > 0) {
+                        warning("Vulnerabilities found but continuing the build as per configuration.")
+                    } else {
+                        warning("No vulnerabilities found, continuing the build.")
+                    }
+
+                    echo "Finished SAST file scanning."
+
+                    // Remove the zip file after upload
+                    if (fileExists(filePath)) {
+                        deleteFile(filePath)
                     }
                 }
             }
