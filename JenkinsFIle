@@ -66,10 +66,10 @@ pipeline {
                     }
 
                     outputStream.write("\r\n--${boundary}--\r\n".getBytes())
-                    outputStream.close()
+                    outputStream.close()  // Close the output stream after writing
 
-                    // Get response
-                    int responseCode = post.responseCode
+                    // Get response and read it before closing the input stream
+                    def responseCode = post.responseCode
                     println "Response Code: ${responseCode}"
 
                     // Read and parse the response
@@ -79,6 +79,7 @@ pipeline {
                     echo "Total Licenses Count: ${jsonResponse.licenses.size()}"
                     echo "Total Dependency Vulnerabilities Count: ${jsonResponse.dependencyVulnerabilities.size()}"
 
+                    // Handle vulnerabilities based on response
                     if ((jsonResponse.vulnerabilities.size() > 0 || jsonResponse.malwares.size() > 0 ||
                          jsonResponse.licenses.size() > 0 || jsonResponse.dependencyVulnerabilities.size() > 0) &&
                         env.Pipeline_BreakBuildWhenVulnsFound == 'True') {
