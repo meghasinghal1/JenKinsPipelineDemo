@@ -61,15 +61,16 @@ pipeline {
                     outputStream.write("Content-Type: application/zip\r\n\r\n".getBytes())
 
                     // Stream the file directly to the output stream
-                    new File(filePath).withInputStream { fileInputStream ->
-                        fileInputStream.transferTo(outputStream)
+                    def fileInputStream = new File(filePath).newInputStream()
+                    fileInputStream.withCloseable { fis ->
+                        fis.transferTo(outputStream)
                     }
 
                     outputStream.write("\r\n--${boundary}--\r\n".getBytes())
                     outputStream.close()  // Close the output stream after writing
 
-                    // Get response and read it before closing the input stream
-                    def responseCode = post.responseCode
+                    // Get response and read it
+                    int responseCode = post.responseCode
                     println "Response Code: ${responseCode}"
 
                     // Read and parse the response
