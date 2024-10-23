@@ -1,45 +1,6 @@
 pipeline {
     agent any
     stages {
-        stage('zipRepo') {
-            steps {
-                script {
-                    def sourcePath = env.WORKSPACE
-                    def destinationPath = "${env.WORKSPACE}/${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
-                    
-                    echo "Source Path: ${sourcePath}"
-                    echo "Destination Path: ${destinationPath}"
-
-                    if (fileExists(destinationPath)) {
-                        echo "Removing existing ZIP file."
-                        if (isUnix()) {
-                            sh "rm ${destinationPath}"
-                        } else {
-                            bat "del ${destinationPath}"
-                        }
-                    } else {
-                        echo "No existing ZIP file to remove."
-                    }
-
-                    try {
-                        if (isUnix()) {
-                            sh "zip -r ${destinationPath} ${sourcePath}"
-                        } else {
-                            bat "powershell -Command \"Compress-Archive -Path ${sourcePath} -DestinationPath ${destinationPath}\""
-                        }
-                        echo "ZIP file created successfully."
-                    } catch (Exception e) {
-                        error("Failed to create ZIP file: ${e.message}")
-                    }
-
-                    if (fileExists(destinationPath)) {
-                        echo "ZIP file is present."
-                    } else {
-                        echo "ZIP file was not created."
-                    }
-                }
-            }
-        }
         stage('uploadZip') {
             steps {
                 script {
@@ -54,10 +15,24 @@ pipeline {
                     post.setRequestProperty('Authorization', "Bearer ${env.Offensive360SastApi_AccessToken}")
                     post.setRequestProperty('Accept', 'application/json')
 
-                    // Write the file to the output stream using a stream
+                    // Prepare the output stream
                     def outputStream = post.outputStream
+
+                    // Write the parameters
                     outputStream.write("--${boundary}\r\n".getBytes())
-                    outputStream.write("Content-Disposition: form-data; name=\"file\"; filename=\"${filePath}\"\r\n".getBytes())
+                    outputStream.write("Content-Disposition: form-data; name=\"ProjectId\"\r\n\r\n${env.Offensive360SastApi_ProjectId}\r\n".getBytes())
+                    outputStream.write("--${boundary}\r\n".getBytes())
+                    outputStream.write("Content-Disposition: form-data; name=\"Name\"\r\n\r\n${env.JOB_NAME}\r\n".getBytes())
+                    outputStream.write("--${boundary}\r\n".getBytes())
+                    outputStream.write("Content-Disposition: form-data; name=\"AllowMalwareScan\"\r\n\r\n${env.Offensive360SastApi_AllowMalwareScan}\r\n".getBytes())
+                    outputStream.write("--${boundary}\r\n".getBytes())
+                    outputStream.write("Content-Disposition: form-data; name=\"AllowLicenseScan\"\r\n\r\n${env.Offensive360SastApi_AllowLicenseScan}\r\n".getBytes())
+                    outputStream.write("--${boundary}\r\n".getBytes())
+                    outputStream.write("Content-Disposition: form-data; name=\"AllowDependencyScan\"\r\n\r\n${env.Offensive360SastApi_AllowDependencyScan}\r\n".getBytes())
+
+                    // Write the file
+                    outputStream.write("--${boundary}\r\n".getBytes())
+                    outputStream.write("Content-Disposition: form-data; name=\"FileSource\"; filename=\"${env.JOB_NAME}-${env.BUILD_NUMBER}.zip\"\r\n".getBytes())
                     outputStream.write("Content-Type: application/zip\r\n\r\n".getBytes())
 
                     // Stream the file directly to the output stream
@@ -74,6 +49,11 @@ pipeline {
                     // Get response and read it
                     int responseCode = post.responseCode
                     println "Response Code: ${responseCode}"
+
+                    if (responseCode != 200) {
+                        def errorResponse = post.errorStream?.text
+                        error("Request failed with response code ${responseCode}: ${errorResponse}")
+                    }
 
                     // Read and parse the response
                     def jsonResponse = new groovy.json.JsonSlurper().parse(post.inputStream)
