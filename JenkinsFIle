@@ -31,6 +31,7 @@ pipeline {
                             try {
                                 // Traverse through all files and directories
                                 Files.walk(Paths.get(sourcePath)).each { path ->
+                                    echo "path...=${path}"
                                     if (Files.isRegularFile(path)) {
                                         // Create the relative path for the ZIP entry
                                         def relativePath = Paths.get(sourcePath).relativize(path).toString().replace("\\\\", "/").replace("\\", "/")
