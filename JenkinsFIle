@@ -142,15 +142,15 @@ pipeline {
                     echo "Finished SAST file scanning."
 
                     // Remove the zip file after upload
-                    if (fileExists(destinationPath)) {
+                    if (fileExists(filePath)) {
                         echo "Removing existing ZIP file."
                         if (isUnix()) {
-                            sh "rm ${destinationPath}"
+                            sh "rm ${filePath}"
                         } else {
-                            bat "del ${destinationPath}"
+                            bat "del ${filePath}"
                         }
                     } else {
-                        echo "No existing ZIP file to remove."
+                        echo "No ZIP file to remove."
                     }
                     echo "bbb...."
                 }
