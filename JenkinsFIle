@@ -46,7 +46,18 @@ pipeline {
                                 zos.close() // Ensure the ZipOutputStream is closed
                             }
                         } else {
-                            bat "powershell -Command \"Compress-Archive -Path ${sourcePath} -DestinationPath ${destinationPath}\""
+                            bat """
+                                powershell -Command "
+                                Add-Type -Assembly 'System.IO.Compression.FileSystem';
+                                \$zip = [System.IO.Compression.ZipFile]::Open('${destinationPath}', 'create');
+                                \$files = [IO.Directory]::GetFiles('${sourcePath}', '*', [IO.SearchOption]::AllDirectories);
+                                foreach(\$file in \$files) {
+                                    \$relPath = \$file.Substring('${sourcePath}'.Length).TrimStart('\\').TrimStart('/').Replace('\\\\', '/').Replace('\\', '/');
+                                    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(\$zip, \$file.Replace('\\\\', '/').Replace('\\', '/'), \$relPath);
+                                }
+                                \$zip.Dispose();
+                                "
+                            """
                         }
                         echo "ZIP file created successfully."
                     } catch (Exception e) {
@@ -82,7 +93,7 @@ pipeline {
                     outputStream.write("--${boundary}\r\n".getBytes())
                     outputStream.write("Content-Disposition: form-data; name=\"ProjectId\"\r\n\r\n${env.Offensive360SastApi_ProjectId}\r\n".getBytes())
                     outputStream.write("--${boundary}\r\n".getBytes())
-                    outputStream.write("Content-Disposition: form-data; name=\"Name\"\r\n\r\n${env.JOB_NAME}\r\n".getBytes())
+                    outputStream.write("Content-Disposition: form-data; name=\"Name\"\r\n\r\n${env.JOB_NAME}-${env.BUILD_NUMBER}\r\n".getBytes())
                     outputStream.write("--${boundary}\r\n".getBytes())
                     outputStream.write("Content-Disposition: form-data; name=\"AllowMalwareScan\"\r\n\r\n${env.Offensive360SastApi_AllowMalwareScan}\r\n".getBytes())
                     outputStream.write("--${boundary}\r\n".getBytes())
