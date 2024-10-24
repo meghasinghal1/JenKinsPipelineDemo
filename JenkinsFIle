@@ -1,5 +1,5 @@
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
+import java.nio.file.*
+import java.util.zip.*
 
 pipeline {
     agent any
@@ -27,29 +27,23 @@ pipeline {
                     try {
                         def sourceDir = new File(sourcePath)
                         if (isUnix()) {
-                           FileOutputStream fos = new FileOutputStream(destinationPath)
-                            ZipOutputStream zos = new ZipOutputStream(fos)
+                           ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(destinationPath))
                             try {
-                                // Use a simple directory traversal instead of eachFileRecurse
-                                sourceDir.eachFile { file ->
-                                    if (file.isFile()) {
-                                        // Calculate relative path manually
-                                        def relativePath = file.absolutePath.replaceFirst("(?s)^" + sourceDir.absolutePath + "/", "")
-                                        def zipEntry = new ZipEntry(relativePath)
+                                // Traverse through all files and directories
+                                Files.walk(Paths.get(sourcePath)).each { path ->
+                                    if (Files.isRegularFile(path)) {
+                                        // Create the relative path for the ZIP entry
+                                        def relativePath = sourcePath.relativize(path.toString()).toString().replace("\\\\", "/").replace("\\", "/")
+                                        ZipEntry zipEntry = new ZipEntry(relativePath)
                                         zos.putNextEntry(zipEntry)
-                                        // Use standard Java file input stream instead
-                                        FileInputStream fis = new FileInputStream(file)
-                                        try {
-                                            fis.transferTo(zos)
-                                        } finally {
-                                            fis.close() // Ensure the FileInputStream is closed
-                                        }
+    
+                                        // Stream the file into the ZIP
+                                        Files.copy(path, zos)
                                         zos.closeEntry()
                                     }
                                 }
                             } finally {
                                 zos.close() // Ensure the ZipOutputStream is closed
-                                fos.close() // Ensure the FileOutputStream is closed
                             }
                         } else {
                             bat "powershell -Command \"Compress-Archive -Path ${sourcePath} -DestinationPath ${destinationPath}\""
@@ -149,7 +143,7 @@ pipeline {
                     // Remove the zip file after upload
                     //if (fileExists(filePath)) {
                         echo "aaa...."
-                        //deleteFile(filePath)
+                        deleteFile(filePath)
                    // }
                     echo "bbb...."
                 }
