@@ -40,12 +40,6 @@ pipeline {
                     } catch (Exception e) {
                         error("Failed to create ZIP file: ${e.message}")
                     }
-
-                    if (fileExists(destinationPath)) {
-                        echo "ZIP file is present."
-                    } else {
-                        echo "ZIP file was not created."
-                    }
                 }
             }
         }
