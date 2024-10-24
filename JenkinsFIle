@@ -46,7 +46,7 @@ pipeline {
                                 zos.close() // Ensure the ZipOutputStream is closed
                             }
                         } else {
-                            bat """
+                             bat """
                                 powershell -Command "
                                 Add-Type -Assembly 'System.IO.Compression.FileSystem';
                                 \$zip = [System.IO.Compression.ZipFile]::Open('${destinationPath}', 'create');
