@@ -137,8 +137,10 @@ pipeline {
 
                     // Remove the zip file after upload
                     if (fileExists(filePath)) {
+                        echo "aaa...."
                         deleteFile(filePath)
                     }
+                    echo "bbb...."
                 }
             }
         }
