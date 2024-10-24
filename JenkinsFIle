@@ -33,7 +33,7 @@ pipeline {
                                 Files.walk(Paths.get(sourcePath)).each { path ->
                                     if (Files.isRegularFile(path)) {
                                         // Create the relative path for the ZIP entry
-                                        def relativePath = sourcePath.relativize(path.toString()).toString().replace("\\\\", "/").replace("\\", "/")
+                                        def relativePath = Paths.get(sourcePath).relativize(path).toString().replace("\\\\", "/").replace("\\", "/")
                                         ZipEntry zipEntry = new ZipEntry(relativePath)
                                         zos.putNextEntry(zipEntry)
     
@@ -143,7 +143,17 @@ pipeline {
                     // Remove the zip file after upload
                     //if (fileExists(filePath)) {
                         echo "aaa...."
-                        deleteFile(filePath)
+                        try {
+                            // Delete the file based on the OS
+                            if (isUnix()) {
+                                sh "rm -f ${filePath}"
+                            } else {
+                                bat "del /F ${filePath}"
+                            }
+                            echo "File deleted successfully."
+                        } catch (Exception e) {
+                            error("Failed to delete file: ${e.message}")
+                        }
                    // }
                     echo "bbb...."
                 }
