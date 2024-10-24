@@ -25,13 +25,15 @@ pipeline {
                     }
 
                     try {
-                        def sourceDir = new File(sourcePath) // Define sourceDir here
+                        def sourceDir = new File(sourcePath)
                         if (isUnix()) {
-                            new FileOutputStream(destinationPath).withStream { fos ->
+                           new FileOutputStream(destinationPath).withStream { fos ->
                                 new ZipOutputStream(fos).withStream { zos ->
                                     sourceDir.eachFileRecurse { file ->
                                         if (file.isFile()) {
-                                            def zipEntry = new ZipEntry(file.relativeTo(sourceDir).path)
+                                            // Calculate relative path manually
+                                            def relativePath = file.absolutePath.replaceFirst("(?s)^" + sourceDir.absolutePath + "/", "")
+                                            def zipEntry = new ZipEntry(relativePath)
                                             zos.putNextEntry(zipEntry)
                                             file.withInputStream { is ->
                                                 is.transferTo(zos)
@@ -139,7 +141,7 @@ pipeline {
                     // Remove the zip file after upload
                     if (fileExists(filePath)) {
                         echo "aaa...."
-                        deleteFile(filePath)
+                        //deleteFile(filePath)
                     }
                     echo "bbb...."
                 }
