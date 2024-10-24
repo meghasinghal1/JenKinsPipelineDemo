@@ -46,18 +46,7 @@ pipeline {
                                 zos.close() // Ensure the ZipOutputStream is closed
                             }
                         } else {
-                             powershell '''
-                                Add-Type -Assembly \'System.IO.Compression.FileSystem\'
-                                $zip = [System.IO.Compression.ZipFile]::Open($destinationPath, \'create\')
-                                $files = [IO.Directory]::GetFiles($sourcePath, "*" , [IO.SearchOption]::AllDirectories)
-                                foreach($file in $files)
-                                {
-                                    $relPath = $file.Substring($sourcePath.Length).TrimStart('\\').TrimStart('/').Replace("\\\\", "/").Replace("\\", "/")
-                                    $a = [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.Replace("\\\\", "/").Replace("\\", "/"), $relPath);
-                                }
-                                $zip.Dispose()
-            				
-            				'''
+                             bat "powershell -Command \"Compress-Archive -Path '${sourcePath}\\*' -DestinationPath '${destinationPath}'\""
                         }
                         echo "ZIP file created successfully."
                     } catch (Exception e) {
@@ -152,20 +141,16 @@ pipeline {
                     echo "Finished SAST file scanning."
 
                     // Remove the zip file after upload
-                    //if (fileExists(filePath)) {
-                        echo "aaa...."
-                        try {
-                            // Delete the file based on the OS
-                            if (isUnix()) {
-                                sh "rm -f ${filePath}"
-                            } else {
-                                bat "del /F \"${filePath}\""
-                            }
-                            echo "File deleted successfully."
-                        } catch (Exception e) {
-                            error("Failed to delete file: ${e.message}")
+                    if (fileExists(destinationPath)) {
+                        echo "Removing existing ZIP file."
+                        if (isUnix()) {
+                            sh "rm ${destinationPath}"
+                        } else {
+                            bat "del ${destinationPath}"
                         }
-                   // }
+                    } else {
+                        echo "No existing ZIP file to remove."
+                    }
                     echo "bbb...."
                 }
             }
