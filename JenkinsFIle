@@ -52,10 +52,11 @@ pipeline {
         stage('uploadZip') {
             steps {
                 script {
-                    try {
                     echo "Received scanning request successfully.."
                     def filePath = "${env.WORKSPACE}/../${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
+                    try {
                     def boundary = UUID.randomUUID().toString()
+                    def selfUrl = "${env:BUILD_URL}console"
 
                     def post = new URL("${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan").openConnection()
                     post.setRequestMethod("POST")
@@ -70,12 +71,19 @@ pipeline {
                     outputStream.write("--${boundary}\r\n".getBytes())
                     outputStream.write("Content-Disposition: form-data; name=\"Name\"\r\n\r\n${env.JOB_NAME}-${env.BUILD_NUMBER}\r\n".getBytes())
                     outputStream.write("--${boundary}\r\n".getBytes())
+                    outputStream.write("Content-Disposition: form-data; name=\"KeepInvisibleAndDeletePostScan\"\r\n\r\nfalse\r\n".getBytes())
+                    outputStream.write("--${boundary}\r\n".getBytes())
+                    outputStream.write("Content-Disposition: form-data; name=\"AllowDependencyScan\"\r\n\r\n${env.Offensive360SastApi_AllowDependencyScan}\r\n".getBytes())
+                    outputStream.write("--${boundary}\r\n".getBytes())
                     outputStream.write("Content-Disposition: form-data; name=\"AllowMalwareScan\"\r\n\r\n${env.Offensive360SastApi_AllowMalwareScan}\r\n".getBytes())
                     outputStream.write("--${boundary}\r\n".getBytes())
                     outputStream.write("Content-Disposition: form-data; name=\"AllowLicenseScan\"\r\n\r\n${env.Offensive360SastApi_AllowLicenseScan}\r\n".getBytes())
                     outputStream.write("--${boundary}\r\n".getBytes())
-                    outputStream.write("Content-Disposition: form-data; name=\"AllowDependencyScan\"\r\n\r\n${env.Offensive360SastApi_AllowDependencyScan}\r\n".getBytes())
+                    outputStream.write("Content-Disposition: form-data; name=\"ExternalScanSourceType\"\r\n\r\nJenkins\r\n".getBytes())
                     outputStream.write("--${boundary}\r\n".getBytes())
+                    outputStream.write("Content-Disposition: form-data; name=\"PipelineUrl\"\r\n\r\n${selfUrl}\r\n".getBytes())
+                    outputStream.write("--${boundary}\r\n".getBytes())
+                    
                     outputStream.write("Content-Disposition: form-data; name=\"FileSource\"; filename=\"${env.JOB_NAME}-${env.BUILD_NUMBER}.zip\"\r\n".getBytes())
                     outputStream.write("Content-Type: application/zip\r\n\r\n".getBytes())
 
