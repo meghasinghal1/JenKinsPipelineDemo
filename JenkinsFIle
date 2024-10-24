@@ -27,21 +27,25 @@ pipeline {
                     try {
                         def sourceDir = new File(sourcePath)
                         if (isUnix()) {
-                           new FileOutputStream(destinationPath).withStream { fos ->
-                                new ZipOutputStream(fos).withStream { zos ->
-                                    sourceDir.eachFileRecurse { file ->
-                                        if (file.isFile()) {
-                                            // Calculate relative path manually
-                                            def relativePath = file.absolutePath.replaceFirst("(?s)^" + sourceDir.absolutePath + "/", "")
-                                            def zipEntry = new ZipEntry(relativePath)
-                                            zos.putNextEntry(zipEntry)
-                                            file.withInputStream { is ->
-                                                is.transferTo(zos)
-                                            }
-                                            zos.closeEntry()
+                           FileOutputStream fos = new FileOutputStream(destinationPath)
+                           ZipOutputStream zos = new ZipOutputStream(fos)
+                            try {
+                                sourceDir.eachFileRecurse { file ->
+                                    if (file.isFile()) {
+                                        // Calculate relative path manually
+                                        def relativePath = file.absolutePath.replaceFirst("(?s)^" + sourceDir.absolutePath + "/", "")
+                                        def zipEntry = new ZipEntry(relativePath)
+                                        zos.putNextEntry(zipEntry)
+                                        // Stream the file directly to the ZipOutputStream
+                                        file.withInputStream { is ->
+                                            is.transferTo(zos)
                                         }
+                                        zos.closeEntry()
                                     }
                                 }
+                            } finally {
+                                zos.close() // Ensure the ZipOutputStream is closed
+                                fos.close() // Ensure the FileOutputStream is closed
                             }
                         } else {
                             bat "powershell -Command \"Compress-Archive -Path ${sourcePath} -DestinationPath ${destinationPath}\""
@@ -139,10 +143,10 @@ pipeline {
                     echo "Finished SAST file scanning."
 
                     // Remove the zip file after upload
-                    if (fileExists(filePath)) {
+                    //if (fileExists(filePath)) {
                         echo "aaa...."
                         //deleteFile(filePath)
-                    }
+                   // }
                     echo "bbb...."
                 }
             }
