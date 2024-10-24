@@ -25,6 +25,7 @@ pipeline {
                     }
 
                     try {
+                        def sourceDir = new File(sourcePath) // Define sourceDir here
                         if (isUnix()) {
                             new FileOutputStream(destinationPath).withStream { fos ->
                                 new ZipOutputStream(fos).withStream { zos ->
