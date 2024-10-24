@@ -148,7 +148,7 @@ pipeline {
                             if (isUnix()) {
                                 sh "rm -f ${filePath}"
                             } else {
-                                bat "del /F ${filePath}"
+                                bat "del /F \"${filePath}\""
                             }
                             echo "File deleted successfully."
                         } catch (Exception e) {
