@@ -54,7 +54,7 @@ pipeline {
                 script {
                     try {
                     echo "Received scanning request successfully.."
-                    def filePath = ""${env.WORKSPACE}/../${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
+                    def filePath = "${env.WORKSPACE}/../${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
                     def boundary = UUID.randomUUID().toString()
 
                     def post = new URL("${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan").openConnection()
