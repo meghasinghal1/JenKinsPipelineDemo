@@ -8,46 +8,33 @@ pipeline {
             steps {
                 script {
                     def sourcePath = env.WORKSPACE
-                    def destinationPath = "${env.WORKSPACE}/${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
+                    def destinationPath = "${env.WORKSPACE}/../${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
                     
                     echo "Source Path: ${sourcePath}"
                     echo "Destination Path: ${destinationPath}"
 
                     if (fileExists(destinationPath)) {
                         echo "Removing existing ZIP file."
-                        if (isUnix()) {
-                            sh "rm ${destinationPath}"
-                        } else {
-                            bat "del ${destinationPath}"
-                        }
+                        sh "rm ${destinationPath}"
                     } else {
                         echo "No existing ZIP file to remove."
                     }
 
                     try {
                         def sourceDir = new File(sourcePath)
-                        if (isUnix()) {
-                           ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(destinationPath))
-                            try {
-                                // Traverse through all files and directories
-                                Files.walk(Paths.get(sourcePath)).each { path ->
-                                    echo "path...=${path}"
-                                    if (Files.isRegularFile(path)) {
-                                        // Create the relative path for the ZIP entry
-                                        def relativePath = Paths.get(sourcePath).relativize(path).toString().replace("\\\\", "/").replace("\\", "/")
-                                        ZipEntry zipEntry = new ZipEntry(relativePath)
-                                        zos.putNextEntry(zipEntry)
-    
-                                        // Stream the file into the ZIP
-                                        Files.copy(path, zos)
-                                        zos.closeEntry()
-                                    }
+                        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(destinationPath))
+                        try {
+                            Files.walk(Paths.get(sourcePath)).each { path ->
+                                if (Files.isRegularFile(path)) {
+                                    def relativePath = Paths.get(sourcePath).relativize(path).toString().replace("\\\\", "/").replace("\\", "/")
+                                    ZipEntry zipEntry = new ZipEntry(relativePath)
+                                    zos.putNextEntry(zipEntry)
+                                    Files.copy(path, zos)
+                                    zos.closeEntry()
                                 }
-                            } finally {
-                                zos.close() // Ensure the ZipOutputStream is closed
                             }
-                        } else {
-                             bat "powershell -Command \"Compress-Archive -Path '${sourcePath}\\*' -DestinationPath '${destinationPath}'\""
+                        } finally {
+                            zos.close()
                         }
                         echo "ZIP file created successfully."
                     } catch (Exception e) {
@@ -65,8 +52,9 @@ pipeline {
         stage('uploadZip') {
             steps {
                 script {
+                    try {
                     echo "Received scanning request successfully.."
-                    def filePath = "${env.WORKSPACE}/${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
+                    def filePath = ""${env.WORKSPACE}/../${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
                     def boundary = UUID.randomUUID().toString()
 
                     def post = new URL("${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan").openConnection()
@@ -76,10 +64,7 @@ pipeline {
                     post.setRequestProperty('Authorization', "Bearer ${env.Offensive360SastApi_AccessToken}")
                     post.setRequestProperty('Accept', 'application/json')
 
-                    // Prepare the output stream
                     def outputStream = post.outputStream
-
-                    // Write the parameters
                     outputStream.write("--${boundary}\r\n".getBytes())
                     outputStream.write("Content-Disposition: form-data; name=\"ProjectId\"\r\n\r\n${env.Offensive360SastApi_ProjectId}\r\n".getBytes())
                     outputStream.write("--${boundary}\r\n".getBytes())
@@ -90,24 +75,20 @@ pipeline {
                     outputStream.write("Content-Disposition: form-data; name=\"AllowLicenseScan\"\r\n\r\n${env.Offensive360SastApi_AllowLicenseScan}\r\n".getBytes())
                     outputStream.write("--${boundary}\r\n".getBytes())
                     outputStream.write("Content-Disposition: form-data; name=\"AllowDependencyScan\"\r\n\r\n${env.Offensive360SastApi_AllowDependencyScan}\r\n".getBytes())
-
-                    // Write the file
                     outputStream.write("--${boundary}\r\n".getBytes())
                     outputStream.write("Content-Disposition: form-data; name=\"FileSource\"; filename=\"${env.JOB_NAME}-${env.BUILD_NUMBER}.zip\"\r\n".getBytes())
                     outputStream.write("Content-Type: application/zip\r\n\r\n".getBytes())
 
-                    // Stream the file directly to the output stream
                     def fileInputStream = new File(filePath).newInputStream()
                     try {
                         fileInputStream.transferTo(outputStream)
                     } finally {
-                        fileInputStream.close()  // Ensure the input stream is closed
+                        fileInputStream.close()
                     }
 
                     outputStream.write("\r\n--${boundary}--\r\n".getBytes())
-                    outputStream.close()  // Close the output stream after writing
+                    outputStream.close()
 
-                    // Get response and read it
                     int responseCode = post.responseCode
                     println "Response Code: ${responseCode}"
 
@@ -116,9 +97,7 @@ pipeline {
                         error("Request failed with response code ${responseCode}: ${errorResponse}")
                     }
 
-                    // Read and parse the response
                     def jsonResponse = new groovy.json.JsonSlurper().parse(post.inputStream)
-
                     def vulnerabilitiesCount = jsonResponse.vulnerabilities?.size() ?: 0
                     def malwaresCount = jsonResponse.malwares?.size() ?: 0
                     def licensesCount = jsonResponse.licenses?.size() ?: 0
@@ -129,7 +108,6 @@ pipeline {
                     echo "Total Licenses Count: ${licensesCount}"
                     echo "Total Dependency Vulnerabilities Count: ${dependencyVulnerabilitiesCount}"
 
-                    // Handle vulnerabilities based on response
                     if ((vulnerabilitiesCount > 0 || malwaresCount > 0 || licensesCount > 0 || dependencyVulnerabilitiesCount > 0) &&
                         env.Pipeline_BreakBuildWhenVulnsFound == 'True') {
                         error("Vulnerabilities found and breaking the build.")
@@ -138,21 +116,17 @@ pipeline {
                     } else {
                         echo "No vulnerabilities found, continuing the build."
                     }
-
                     echo "Finished SAST file scanning."
-
-                    // Remove the zip file after upload
-                    if (fileExists(filePath)) {
-                        echo "Removing existing ZIP file."
-                        if (isUnix()) {
+                    }
+                    finally {
+                        if (fileExists(filePath)) {
+                            echo "Removing existing ZIP file post scan."
                             sh "rm ${filePath}"
                         } else {
-                            bat "del ${filePath}"
+                            echo "No ZIP file to remove post scan."
                         }
-                    } else {
-                        echo "No ZIP file to remove."
                     }
-                    echo "bbb...."
+                    echo "Script execution ended"
                 }
             }
         }
