@@ -29,7 +29,6 @@ namespace OWASP.WebGoat.NET
 
         protected void btnGO_Click(object sender, EventArgs e)
         {
-            Password = "123456";
             //url encoded
             //base64
             //sha1
