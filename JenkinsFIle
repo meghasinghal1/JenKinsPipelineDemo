@@ -107,7 +107,7 @@ pipeline {
     
                         if ((vulnerabilitiesCount > 0 || malwaresCount > 0 || licensesCount > 0 || dependencyVulnerabilitiesCount > 0) &&
                             env.Pipeline_BreakBuildWhenVulnsFound == 'True') {
-                            error("Vulnerabilities found and breaking the build.")
+                            error("\u001B[31mVulnerabilities found and breaking the build.\u001B[0m")
                         } else if (vulnerabilitiesCount > 0) {
                             echo "WARNING: Vulnerabilities found but continuing the build as per configuration."
                         } else {
@@ -115,7 +115,7 @@ pipeline {
                         }
 
                         echo "\n\n**********************************************************************************************************************"
-                        echo ("Here is the link for Offensive 360 vulnerability dashboard : {0}/scan/{1}" -f $env:Offensive360SastUi_BaseUrl.TrimEnd('/'), $apiResponse.projectId)
+                        echo ("Offensive 360 vulnerability dashboard : {0}/scan/{1}" -f env:Offensive360SastUi_BaseUrl.TrimEnd('/'), jsonResponse.projectId)
                         echo "**********************************************************************************************************************\n\n"
                         echo "Finished SAST file scanning."
                     }
