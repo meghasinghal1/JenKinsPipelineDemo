@@ -106,7 +106,7 @@ pipeline {
                         echo "Total Dependency Vulnerabilities Count: ${dependencyVulnerabilitiesCount}"
 
                         echo "\n\n**********************************************************************************************************************"
-                        echo "Offensive 360 vulnerability dashboard : ${env.Offensive360SastUi_BaseUrl.TrimEnd('/')}/scan/${jsonResponse.projectId}"
+                        echo "Offensive 360 vulnerability dashboard : ${env.Offensive360SastUi_BaseUrl.replaceAll('/+$', '')}/scan/${jsonResponse.projectId}"
                         echo "**********************************************************************************************************************\n\n"
     
                         if ((vulnerabilitiesCount > 0 || malwaresCount > 0 || licensesCount > 0 || dependencyVulnerabilitiesCount > 0) &&
