@@ -108,12 +108,12 @@ pipeline {
                         echo "\n\n**********************************************************************************************************************"
                         def baseUrl = env.Offensive360SastUi_BaseUrl ?: ''
                         def sanitizedBaseUrl = baseUrl.replaceAll('/+$', '')
-                        echo "Offensive 360 vulnerability dashboard : ${sanitizedBaseUrl}/scan/${jsonResponse.projectId}"
+                        echo "Offensive 360 vulnerability scan has been completed successfully and here is dashboard link: ${sanitizedBaseUrl}/scan/${jsonResponse.projectId}"
                         echo "**********************************************************************************************************************\n\n"
     
                         if ((vulnerabilitiesCount > 0 || malwaresCount > 0 || licensesCount > 0 || dependencyVulnerabilitiesCount > 0) &&
                             env.Pipeline_BreakBuildWhenVulnsFound == 'True') {
-                            error("Vulnerabilities found and breaking the build.")
+                            error("Vulnerabilities found and breaking the build as per the configuration.")
                         } else if (vulnerabilitiesCount > 0) {
                             echo "WARNING: Vulnerabilities found but continuing the build as per configuration."
                         } else {
