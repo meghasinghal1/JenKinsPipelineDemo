@@ -115,7 +115,7 @@ pipeline {
                         }
 
                         echo "\n\n**********************************************************************************************************************"
-                        echo "Offensive 360 vulnerability dashboard : ${env:Offensive360SastUi_BaseUrl.TrimEnd('/')}/scan/${jsonResponse.projectId}")
+                        echo "Offensive 360 vulnerability dashboard : ${env:Offensive360SastUi_BaseUrl.TrimEnd('/')}/scan/${jsonResponse.projectId}"
                         echo "**********************************************************************************************************************\n\n"
                         echo "Finished SAST file scanning."
                     }
