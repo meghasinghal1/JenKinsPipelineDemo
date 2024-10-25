@@ -107,7 +107,6 @@ pipeline {
     
                         if ((vulnerabilitiesCount > 0 || malwaresCount > 0 || licensesCount > 0 || dependencyVulnerabilitiesCount > 0) &&
                             env.Pipeline_BreakBuildWhenVulnsFound == 'True') {
-                            echo "\033[31mVulnerabilities found and breaking the build.\033[0m"
                             error("Vulnerabilities found and breaking the build.")
                         } else if (vulnerabilitiesCount > 0) {
                             echo "WARNING: Vulnerabilities found but continuing the build as per configuration."
