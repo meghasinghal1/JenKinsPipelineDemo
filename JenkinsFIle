@@ -104,6 +104,10 @@ pipeline {
                         echo "Total Malwares Count: ${malwaresCount}"
                         echo "Total Licenses Count: ${licensesCount}"
                         echo "Total Dependency Vulnerabilities Count: ${dependencyVulnerabilitiesCount}"
+
+                        echo "\n\n**********************************************************************************************************************"
+                        echo "Offensive 360 vulnerability dashboard : ${env:Offensive360SastUi_BaseUrl.TrimEnd('/')}/scan/${jsonResponse.projectId}"
+                        echo "**********************************************************************************************************************\n\n"
     
                         if ((vulnerabilitiesCount > 0 || malwaresCount > 0 || licensesCount > 0 || dependencyVulnerabilitiesCount > 0) &&
                             env.Pipeline_BreakBuildWhenVulnsFound == 'True') {
@@ -113,10 +117,6 @@ pipeline {
                         } else {
                             echo "No vulnerabilities found, continuing the build."
                         }
-
-                        echo "\n\n**********************************************************************************************************************"
-                        echo "Offensive 360 vulnerability dashboard : ${env:Offensive360SastUi_BaseUrl.TrimEnd('/')}/scan/${jsonResponse.projectId}"
-                        echo "**********************************************************************************************************************\n\n"
                         echo "Finished SAST file scanning."
                     }
                     finally {
