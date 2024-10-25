@@ -14,10 +14,7 @@ pipeline {
                     echo "Destination Path: ${destinationPath}"
 
                     if (fileExists(destinationPath)) {
-                        echo "Removing existing ZIP file."
                         sh "rm ${destinationPath}"
-                    } else {
-                        echo "No existing ZIP file to remove."
                     }
 
                     try {
@@ -49,83 +46,78 @@ pipeline {
                     echo "Received scanning request successfully.."
                     def filePath = "${env.WORKSPACE}/../${env.JOB_NAME}-${env.BUILD_NUMBER}.zip"
                     try {
-                    def boundary = UUID.randomUUID().toString()
-                    def selfUrl = "${env:BUILD_URL}console"
-
-                    def post = new URL("${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan").openConnection()
-                    post.setRequestMethod("POST")
-                    post.setDoOutput(true)
-                    post.setRequestProperty('Content-Type', "multipart/form-data; boundary=${boundary}")
-                    post.setRequestProperty('Authorization', "Bearer ${env.Offensive360SastApi_AccessToken}")
-                    post.setRequestProperty('Accept', 'application/json')
-
-                    def outputStream = post.outputStream
-                    outputStream.write("--${boundary}\r\n".getBytes())
-                    outputStream.write("Content-Disposition: form-data; name=\"ProjectId\"\r\n\r\n${env.Offensive360SastApi_ProjectId}\r\n".getBytes())
-                    outputStream.write("--${boundary}\r\n".getBytes())
-                    outputStream.write("Content-Disposition: form-data; name=\"Name\"\r\n\r\n${env.JOB_NAME}-${env.BUILD_NUMBER}\r\n".getBytes())
-                    outputStream.write("--${boundary}\r\n".getBytes())
-                    outputStream.write("Content-Disposition: form-data; name=\"KeepInvisibleAndDeletePostScan\"\r\n\r\nfalse\r\n".getBytes())
-                    outputStream.write("--${boundary}\r\n".getBytes())
-                    outputStream.write("Content-Disposition: form-data; name=\"AllowDependencyScan\"\r\n\r\n${env.Offensive360SastApi_AllowDependencyScan}\r\n".getBytes())
-                    outputStream.write("--${boundary}\r\n".getBytes())
-                    outputStream.write("Content-Disposition: form-data; name=\"AllowMalwareScan\"\r\n\r\n${env.Offensive360SastApi_AllowMalwareScan}\r\n".getBytes())
-                    outputStream.write("--${boundary}\r\n".getBytes())
-                    outputStream.write("Content-Disposition: form-data; name=\"AllowLicenseScan\"\r\n\r\n${env.Offensive360SastApi_AllowLicenseScan}\r\n".getBytes())
-                    outputStream.write("--${boundary}\r\n".getBytes())
-                    outputStream.write("Content-Disposition: form-data; name=\"ExternalScanSourceType\"\r\n\r\nJenkins\r\n".getBytes())
-                    outputStream.write("--${boundary}\r\n".getBytes())
-                    outputStream.write("Content-Disposition: form-data; name=\"PipelineUrl\"\r\n\r\n${selfUrl}\r\n".getBytes())
-                    outputStream.write("--${boundary}\r\n".getBytes())
-                    
-                    outputStream.write("Content-Disposition: form-data; name=\"FileSource\"; filename=\"${env.JOB_NAME}-${env.BUILD_NUMBER}.zip\"\r\n".getBytes())
-                    outputStream.write("Content-Type: application/zip\r\n\r\n".getBytes())
-
-                    def fileInputStream = new File(filePath).newInputStream()
-                    try {
-                        fileInputStream.transferTo(outputStream)
-                    } finally {
-                        fileInputStream.close()
-                    }
-
-                    outputStream.write("\r\n--${boundary}--\r\n".getBytes())
-                    outputStream.close()
-
-                    int responseCode = post.responseCode
-                    println "Response Code: ${responseCode}"
-
-                    if (responseCode != 200) {
-                        def errorResponse = post.errorStream?.text
-                        error("Request failed with response code ${responseCode}: ${errorResponse}")
-                    }
-
-                    def jsonResponse = new groovy.json.JsonSlurper().parse(post.inputStream)
-                    def vulnerabilitiesCount = jsonResponse.vulnerabilities?.size() ?: 0
-                    def malwaresCount = jsonResponse.malwares?.size() ?: 0
-                    def licensesCount = jsonResponse.licenses?.size() ?: 0
-                    def dependencyVulnerabilitiesCount = jsonResponse.dependencyVulnerabilities?.size() ?: 0
-
-                    echo "Total Vulnerabilities Count: ${vulnerabilitiesCount}"
-                    echo "Total Malwares Count: ${malwaresCount}"
-                    echo "Total Licenses Count: ${licensesCount}"
-                    echo "Total Dependency Vulnerabilities Count: ${dependencyVulnerabilitiesCount}"
-
-                    if ((vulnerabilitiesCount > 0 || malwaresCount > 0 || licensesCount > 0 || dependencyVulnerabilitiesCount > 0) &&
-                        env.Pipeline_BreakBuildWhenVulnsFound == 'True') {
-                        error("Vulnerabilities found and breaking the build.")
-                    } else if (vulnerabilitiesCount > 0) {
-                        echo "WARNING: Vulnerabilities found but continuing the build as per configuration."
-                    } else {
-                        echo "No vulnerabilities found, continuing the build."
-                    }
-                    echo "Finished SAST file scanning."
+                        def boundary = UUID.randomUUID().toString()
+                        def selfUrl = "${env:BUILD_URL}console"
+    
+                        def post = new URL("${env.Offensive360SastApi_BaseUrl.trim()}/app/api/externalScan").openConnection()
+                        post.setRequestMethod("POST")
+                        post.setDoOutput(true)
+                        post.setRequestProperty('Content-Type', "multipart/form-data; boundary=${boundary}")
+                        post.setRequestProperty('Authorization', "Bearer ${env.Offensive360SastApi_AccessToken}")
+                        post.setRequestProperty('Accept', 'application/json')
+    
+                        def outputStream = post.outputStream
+                        outputStream.write("--${boundary}\r\n".getBytes())
+                        outputStream.write("Content-Disposition: form-data; name=\"ProjectId\"\r\n\r\n${env.Offensive360SastApi_ProjectId}\r\n".getBytes())
+                        outputStream.write("--${boundary}\r\n".getBytes())
+                        outputStream.write("Content-Disposition: form-data; name=\"Name\"\r\n\r\n${env.JOB_NAME}-${env.BUILD_NUMBER}\r\n".getBytes())
+                        outputStream.write("--${boundary}\r\n".getBytes())
+                        outputStream.write("Content-Disposition: form-data; name=\"KeepInvisibleAndDeletePostScan\"\r\n\r\nfalse\r\n".getBytes())
+                        outputStream.write("--${boundary}\r\n".getBytes())
+                        outputStream.write("Content-Disposition: form-data; name=\"AllowDependencyScan\"\r\n\r\n${env.Offensive360SastApi_AllowDependencyScan}\r\n".getBytes())
+                        outputStream.write("--${boundary}\r\n".getBytes())
+                        outputStream.write("Content-Disposition: form-data; name=\"AllowMalwareScan\"\r\n\r\n${env.Offensive360SastApi_AllowMalwareScan}\r\n".getBytes())
+                        outputStream.write("--${boundary}\r\n".getBytes())
+                        outputStream.write("Content-Disposition: form-data; name=\"AllowLicenseScan\"\r\n\r\n${env.Offensive360SastApi_AllowLicenseScan}\r\n".getBytes())
+                        outputStream.write("--${boundary}\r\n".getBytes())
+                        outputStream.write("Content-Disposition: form-data; name=\"ExternalScanSourceType\"\r\n\r\nJenkins\r\n".getBytes())
+                        outputStream.write("--${boundary}\r\n".getBytes())
+                        outputStream.write("Content-Disposition: form-data; name=\"PipelineUrl\"\r\n\r\n${selfUrl}\r\n".getBytes())
+                        outputStream.write("--${boundary}\r\n".getBytes())
+                        
+                        outputStream.write("Content-Disposition: form-data; name=\"FileSource\"; filename=\"${env.JOB_NAME}-${env.BUILD_NUMBER}.zip\"\r\n".getBytes())
+                        outputStream.write("Content-Type: application/zip\r\n\r\n".getBytes())
+    
+                        def fileInputStream = new File(filePath).newInputStream()
+                        try {
+                            fileInputStream.transferTo(outputStream)
+                        } finally {
+                            fileInputStream.close()
+                        }
+    
+                        outputStream.write("\r\n--${boundary}--\r\n".getBytes())
+                        outputStream.close()
+    
+                        int responseCode = post.responseCode
+                        if (responseCode != 200) {
+                            def errorResponse = post.errorStream?.text
+                            error("Request failed with response code ${responseCode}: ${errorResponse}")
+                        }
+    
+                        def jsonResponse = new groovy.json.JsonSlurper().parse(post.inputStream)
+                        def vulnerabilitiesCount = jsonResponse.vulnerabilities?.size() ?: 0
+                        def malwaresCount = jsonResponse.malwares?.size() ?: 0
+                        def licensesCount = jsonResponse.licenses?.size() ?: 0
+                        def dependencyVulnerabilitiesCount = jsonResponse.dependencyVulnerabilities?.size() ?: 0
+    
+                        echo "Total Vulnerabilities Count: ${vulnerabilitiesCount}"
+                        echo "Total Malwares Count: ${malwaresCount}"
+                        echo "Total Licenses Count: ${licensesCount}"
+                        echo "Total Dependency Vulnerabilities Count: ${dependencyVulnerabilitiesCount}"
+    
+                        if ((vulnerabilitiesCount > 0 || malwaresCount > 0 || licensesCount > 0 || dependencyVulnerabilitiesCount > 0) &&
+                            env.Pipeline_BreakBuildWhenVulnsFound == 'True') {
+                            error("Vulnerabilities found and breaking the build.")
+                        } else if (vulnerabilitiesCount > 0) {
+                            echo "WARNING: Vulnerabilities found but continuing the build as per configuration."
+                        } else {
+                            echo "No vulnerabilities found, continuing the build."
+                        }
+                        echo "Finished SAST file scanning."
                     }
                     finally {
                         if (fileExists(filePath)) {
-                            echo "Removing existing ZIP file post scan."
                             sh "rm ${filePath}"
-                        } else {
-                            echo "No ZIP file to remove post scan."
                         }
                     }
                     echo "Script execution ended"
